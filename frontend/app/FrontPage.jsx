@@ -126,7 +126,7 @@ class FrontPage extends React.Component {
             <div className="centered">
                 <label htmlFor="search-box">Search:</label>
                 <input type="text" id="search-box" style={{width: "50%"}} onChange={this.updateSearchTerms}/>
-                <img style={{marginLeft:"auto",marginRight:"auto",width:"200px", display: this.state.loading ? "inline" : "none" }} src="/assets/images/Spinner-1s-200px.gif"/>
+                <img style={{marginLeft:"auto",marginRight:"auto",width:"44px", display: this.state.loading ? "inline" : "none" }} src="/assets/images/Spinner-1s-44px.svg"/>
             </div>
             <div style={{marginTop: "1em"}}>
             {
