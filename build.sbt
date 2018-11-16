@@ -1,11 +1,24 @@
 import com.typesafe.sbt.packager.docker
 import com.typesafe.sbt.packager.docker.Cmd
+import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.{dockerExposedPorts, dockerUsername}
 
 name := "FibreCensus"
  
 version := "1.0" 
       
-lazy val `fibrecensus` = (project in file(".")).enablePlugins(PlayScala)
+lazy val `fibrecensus` = (project in file("."))
+  .enablePlugins(PlayScala)
+    .settings(version := sys.props.getOrElse("build.number","DEV"),
+      dockerExposedPorts := Seq(9000),
+      dockerUsername  := sys.props.get("docker.username"),
+dockerRepository := Some("guardianmultimedia"),
+packageName in Docker := "guardianmultimedia/fibrecensus",
+packageName := "fibrecensus",
+dockerBaseImage := "openjdk:8-jdk-alpine",
+dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV"))),
+dockerCommands ++= Seq(
+
+))
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
       
@@ -34,14 +47,3 @@ libraryDependencies ++= Seq(
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
 
 enablePlugins(DockerPlugin, AshScriptPlugin)
-version := sys.props.getOrElse("build.number","DEV")
-dockerExposedPorts := Seq(9000)
-dockerUsername  := sys.props.get("docker.username")
-dockerRepository := Some("guardianmultimedia")
-packageName in Docker := "guardianmultimedia/fibrecensus"
-packageName := "fibrecensus"
-dockerBaseImage := "openjdk:8-jdk-alpine"
-dockerAlias := docker.DockerAlias(None,sys.props.get("docker.username"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV")))
-dockerCommands ++= Seq(
-
-)
