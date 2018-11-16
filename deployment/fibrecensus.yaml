@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fibrecensus-prod-deployment
+  labels:
+    com.theguardian.app: Multimedia
+    com.theguardian.stack: FibreCensus
+    com.theguardian.stage: PROD
+    com.theguardian.service: webapp
+spec:
+  replicas: 3
+  revisionHistoryLimit: 5 #clean up replica sets older than this
+  selector:
+    matchLabels:
+      com.theguardian.app: Multimedia
+      com.theguardian.stack: FibreCensus
+      com.theguardian.stage: PROD
+      com.theguardian.service: webapp
+  template:
+    metadata:
+      labels:
+        com.theguardian.app: Multimedia
+        com.theguardian.stack: FibreCensus
+        com.theguardian.stage: PROD
+        com.theguardian.service: webapp
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - fibrecensus-prod-deployment
+            topologyKey: "kubernetes.io/hostname"
+      containers:
+      - image: guardianmultimedia/fibrecensus:6
+        name: fibrecensus-prod
+        ports:
+        - containerPort: 9000
+          name: webapp
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 9000
+          periodSeconds: 3
+          initialDelaySeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /healthcheck
+            port: 9000
+          periodSeconds: 30
+          initialDelaySeconds: 60
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: 1
+          limits:
+            memory: "4Gi"
+            cpu: 4
+        env:
+        - name: JAVA_OPTS
+          value: -Xmx1024m -Xms1024m -XX:+ExitOnOutOfMemoryError
+        - name: APP_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: fibrecensus-secrets
+              key: appsecret
+        volumeMounts:
+        - name: configmap
+          mountPath: /opt/docker/conf
+      volumes:
+      - name: configmap
+        configMap:
+          name: fibrecensus-config
+      restartPolicy: Always

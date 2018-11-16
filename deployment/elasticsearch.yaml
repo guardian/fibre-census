@@ -1,0 +1,78 @@
+apiVersion: apps/v1beta2
+kind: StatefulSet
+metadata:
+  creationTimestamp: null
+  labels:
+    com.theguardian.app: Multimedia
+    com.theguardian.stack: FibreCensus
+    com.theguardian.stage: CODE
+    com.theguardian.service: elasticsearch
+  name: fibrecensus-elasticsearch
+spec:
+  replicas: 1
+  serviceName: portal-elasticsearch
+  selector:
+    matchLabels:
+      com.theguardian.app: Multimedia
+      com.theguardian.stack: FibreCensus
+      com.theguardian.stage: CODE
+      com.theguardian.service: elasticsearch
+  template:
+    metadata:
+      labels:
+        com.theguardian.app: Multimedia
+        com.theguardian.stack: FibreCensus
+        com.theguardian.stage: CODE
+        com.theguardian.service: elasticsearch
+    spec:
+      containers:
+      - env:
+        - name: ES_JAVA_OPTS
+          value: -Xms7G -Xmx7G
+        - name: bootstrap.memory_lock
+          value: "true"
+        - name: cluster.name
+          value: VidispineES
+        - name: discovery.zen.ping.unicast.hosts
+          value: fc-es-cluster
+        image: andyg42/elasticsearch-noxpack-analysisicu:5.6.11
+        name: fc-elasticsearch
+        resources:
+          requests:
+            memory: 6Gi
+            cpu: 1
+          limits:
+            cpu: 6
+        ports:
+        - containerPort: 9200
+          name: es-http
+        - containerPort: 9300
+          name: es-internal
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 9200
+          periodSeconds: 3
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 9200
+          periodSeconds: 5
+          initialDelaySeconds: 20
+        volumeMounts:
+        - mountPath: /usr/share/elasticsearch/data
+          name: esdata
+      restartPolicy: Always
+  volumeClaimTemplates:
+  - metadata:
+      name: esdata
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+      storageClassName: basic
+status:
+  replicas: 0
