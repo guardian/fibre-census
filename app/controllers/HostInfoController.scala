@@ -4,8 +4,10 @@ import java.time.ZonedDateTime
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
+import com.sksamuel.elastic4s.http.ElasticDsl.update
+import helpers.{ESClientManager, ZonedDateTimeEncoder}
 import javax.inject.Inject
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import play.api.mvc.{AbstractController, ControllerComponents, PlayBodyParsers}
 import models.HostInfo
 import responses.GenericErrorResponse
@@ -15,9 +17,21 @@ import play.api.http.{DefaultHttpErrorHandler, HttpErrorHandler, ParserConfigura
 import play.api.libs.Files.TemporaryFileCreator
 import play.api.libs.circe.Circe
 
-class HostInfoController @Inject() (playConfig:Configuration,cc:ControllerComponents, defaultTempFileCreator:TemporaryFileCreator)(implicit system:ActorSystem)
-  extends AbstractController(cc) with PlayBodyParsers with Circe {
+import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.Future
+
+class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerComponents,
+                                    defaultTempFileCreator:TemporaryFileCreator, esClientMgr:ESClientManager)(implicit system:ActorSystem)
+  extends AbstractController(cc) with PlayBodyParsers with ZonedDateTimeEncoder with Circe {
+  import com.sksamuel.elastic4s.http.ElasticDsl._
+  import com.sksamuel.elastic4s.circe._
+
+  private val logger = Logger(getClass)
   implicit def materializer:Materializer = ActorMaterializer()
+
+
+  protected val indexName = playConfig.get[String]("elasticsearch.indexName")
 
   override def config:ParserConfiguration = {
     ParserConfiguration(2048*1024,10*1024*1024)
@@ -27,12 +41,24 @@ class HostInfoController @Inject() (playConfig:Configuration,cc:ControllerCompon
 
   override def temporaryFileCreator:TemporaryFileCreator = defaultTempFileCreator
 
-  def addRecord = Action(parse.xml) { request=>
+  def addRecord = Action.async(parse.xml) { request=>
+    val client = esClientMgr.getClient()
+
     HostInfo.fromXml(request.body, ZonedDateTime.now()) match {
-      case Right(hostInfo)=>
-        Ok("Read result")
+      case Right(entry)=>
+        val idToUse = s"${entry.hostName}"
+        client.execute {
+          update(idToUse).in(s"$indexName/entry").docAsUpsert(entry)
+        }.map({
+          case Left(failure) => InternalServerError(GenericErrorResponse("elasticsearch_error", failure.error.toString).asJson)
+          case Right(success) => Ok(success.result.id)
+        }).recoverWith({
+          case ex:Throwable=>
+            logger.error("Could not create host entry", ex)
+            Future(InternalServerError(GenericErrorResponse("elasticsearch_error", ex.getLocalizedMessage).asJson))
+        })
       case Left(err)=>
-        BadRequest(GenericErrorResponse("bad_data", err).asJson)
+        Future(BadRequest(GenericErrorResponse("bad_data", err).asJson))
     }
   }
 }
