@@ -10,12 +10,13 @@ import javax.inject.Inject
 import play.api.{Configuration, Logger}
 import play.api.mvc.{AbstractController, ControllerComponents, PlayBodyParsers}
 import models.HostInfo
-import responses.GenericErrorResponse
+import responses.{GenericErrorResponse, ObjectListResponse}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import play.api.http.{DefaultHttpErrorHandler, HttpErrorHandler, ParserConfiguration}
 import play.api.libs.Files.TemporaryFileCreator
 import play.api.libs.circe.Circe
+import play.api.libs.json.Json
 
 import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits._
@@ -59,6 +60,29 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
         })
       case Left(err)=>
         Future(BadRequest(GenericErrorResponse("bad_data", err).asJson))
+    }
+  }
+
+  def simpleStringSearch(q:Option[String],start:Option[Int],length:Option[Int]) = Action.async {
+    val cli = esClientMgr.getClient()
+
+    val actualStart=start.getOrElse(0)
+    val actualLength=length.getOrElse(50)
+
+    q match {
+      case Some(searchTerms) =>
+        val responseFuture = cli.execute {
+          search(indexName) query searchTerms from actualStart size actualLength
+        }
+
+        responseFuture.map({
+          case Left(failure) =>
+            InternalServerError(Json.obj("status" -> "error", "detail" -> failure.toString))
+          case Right(results) =>
+            val resultList = results.result.to[HostInfo] //using the HostInfoHitReader trait
+            Ok(ObjectListResponse[IndexedSeq[HostInfo]]("ok","entry",resultList,results.result.totalHits.toInt).asJson)
+        })
+      case None => Future(BadRequest(GenericErrorResponse("error", "you must specify a query string with ?q={string}").asJson))
     }
   }
 }
