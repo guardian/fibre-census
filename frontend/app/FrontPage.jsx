@@ -71,7 +71,7 @@ class FrontPage extends React.Component {
             },
             {
                 header: "Snapshot time",
-                key: "timestamp",
+                key: "lastUpdate",
                 render: (value)=><TimestampFormatter relative={this.state.showRelativeTime} value={value}/>,
                 headerProps: { className: 'dashboardheader'}
             }
