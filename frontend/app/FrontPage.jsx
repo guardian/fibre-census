@@ -93,17 +93,27 @@ class FrontPage extends React.Component {
     }
 
     mapOutData(rawData){
-        return {
-            "hostName": rawData.hostName,
-            "computerName": rawData.computerName,
-            "ipAddresses": rawData.ipAddresses,
+        const fcData = rawData.fibreChannel!==null ? {
             "fcWWN": rawData.fibreChannel.domains.map(dom=>dom.portWWN),
             "fcLunCount": rawData.fibreChannel.domains.map(dom=>dom.lunCount),
             "fcSpeed": rawData.fibreChannel.domains.map(dom=>dom.speed ? dom.speed : <span className="small-info">not connected</span>),
             "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.fcStatus ? dom.fcStatus : <span className="small-info">not connected</span>),
             "fcAdaptor": rawData.fibreChannel.productName,
+        } : {
+            "fcWWN": ["Not present"],
+            "fcLunCount": ["Not present"],
+            "fcSpeed": ["Not present"],
+            "fcStatus": ["Not present"],
+            "fcAdaptor": "Not present"
+        };
+
+
+        return Object.assign({
+            "hostName": rawData.hostName,
+            "computerName": rawData.computerName,
+            "ipAddresses": rawData.ipAddresses,
             "lastUpdate": rawData.lastUpdate
-        }
+        }, fcData)
     }
     refresh(){
         const searchTerm = encodeURIComponent(this.state.searchTerm ? this.state.searchTerm : "*");
