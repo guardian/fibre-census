@@ -41,6 +41,35 @@ class FrontPage extends React.Component {
                 headerProps: { className: 'dashboardheader'}
             },
             {
+                header: "Fibre WWNs",
+                key: "fcWWN",
+                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
+                headerProps: { className: 'dashboardheader'}
+            },
+            {
+                header: "Fibre Status",
+                key: "fcStatus",
+                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
+                headerProps: { className: 'dashboardheader'}
+            },
+            {
+                header: "Fibre Configured Speed",
+                key: "fcSpeed",
+                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
+                headerProps: { className: 'dashboardheader'}
+            },
+            {
+                header: "Fibre LUN count",
+                key: "fcLunCount",
+                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
+                headerProps: { className: 'dashboardheader'}
+            },
+            {
+                header: "Fibre adaptor model",
+                key: "fcAdaptor",
+                headerProps: { className: 'dashboardheader'}
+            },
+            {
                 header: "Snapshot time",
                 key: "timestamp",
                 render: (value)=><TimestampFormatter relative={this.state.showRelativeTime} value={value}/>,
@@ -70,8 +99,8 @@ class FrontPage extends React.Component {
             "ipAddresses": rawData.ipAddresses,
             "fcWWN": rawData.fibreChannel.domains.map(dom=>dom.portWWN),
             "fcLunCount": rawData.fibreChannel.domains.map(dom=>dom.lunCount),
-            "fcSpeed": rawData.fibreChannel.domains.map(dom=>dom.speed ? dom.speed : "(not present)"),
-            "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.fcStatus ? dom.fcStatus : "(not present)"),
+            "fcSpeed": rawData.fibreChannel.domains.map(dom=>dom.speed ? dom.speed : <span className="small-info">not connected</span>),
+            "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.fcStatus ? dom.fcStatus : <span className="small-info">not connected</span>),
             "fcAdaptor": rawData.fibreChannel.productName,
             "lastUpdate": rawData.lastUpdate
         }

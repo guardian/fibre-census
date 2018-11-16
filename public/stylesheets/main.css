@@ -112,3 +112,14 @@ tr.dashboardheader, th.dashboardheader {
 .selectable-row {
     cursor: pointer;
 }
+
+ul.addressList {
+    padding-left: 0;
+    margin-top:0;
+    list-style: none;
+}
+
+.small-info {
+    font-size: 0.7em;
+    font-style: italic;
+}
