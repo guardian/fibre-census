@@ -78,7 +78,7 @@ sub breakdownLongDate {
 }
 
 sub getLoginHistory {
-    my $rawHistory = `last | grep console | grep -v localhome | head`;
+    my $rawHistory = `last | grep console |  head`;
     my @result;
 
     foreach(split(/\n/, $rawHistory)){
@@ -165,10 +165,10 @@ if($format eq "text"){
     "hostname"=>$hostname,
     "computerName"=>$computerName,
     "ipAddresses"=>\@ipInfo,
-    "fibrechannel"=>$fibreInfo,
-      "recentLogins"=>$recentLogins
+    "fibrechannel"=>$fibreInfo
   };
     my $content = XMLout($data,RootName=>"data", KeyAttr=>[ ]);
+    my $loginsContent = XMLout($recentLogins,RootName=>"logins");
 
     if($outputUri){
         my $ua=LWP::UserAgent->new;
@@ -183,5 +183,6 @@ if($format eq "text"){
         }
     } else {
         print $content . "\n";
+        print $loginsContent . "\n";
     }
 }

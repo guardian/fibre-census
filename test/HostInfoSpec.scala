@@ -1,7 +1,7 @@
-import java.time.ZonedDateTime
+import java.time.{Duration, LocalDateTime, ZonedDateTime}
 
 import org.specs2.mutable._
-import models.{FCDomain, FCInfo, HostInfo}
+import models.{FCDomain, FCInfo, HostInfo, RecentLogin}
 
 import scala.io.Source
 import scala.xml.parsing.ConstructingParser
@@ -47,7 +47,6 @@ class HostInfoSpec extends Specification {
           ),"ATTO ThunderLink FC 2082"
         )),
         t))
-
     }
   }
 }

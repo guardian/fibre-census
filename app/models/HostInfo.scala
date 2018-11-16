@@ -27,4 +27,5 @@ object HostInfo extends ((String,String,List[String],Option[FCInfo], ZonedDateTi
       Left(ex.toString)
   }
 }
+
 case class HostInfo(hostName:String, computerName:String, ipAddresses: List[String], fibreChannel:Option[FCInfo], lastUpdate:ZonedDateTime)
