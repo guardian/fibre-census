@@ -1,14 +1,30 @@
+package models
 import java.time.ZonedDateTime
-import com.outworkers.phantom.dsl._
+
 import io.circe._
 import io.circe.generic.auto
 
-case class HostInfo(hostName:String, computerName:String, ipAddresses: List[String], fibreChannel:Option[FCInfo], lastUpdate:ZonedDateTime)
+import scala.xml.NodeSeq
 
-abstract class HostInfoRecord extends Table[HostInfoRecord,HostInfo] {
-  object hostName extends StringColumn with PartitionKey
-  object computerName extends StringColumn
-  object ipAddresses extends ListColumn[String]
-  object fibreChannel extends OptionalJsonColumn[FCInfo]
-  object lastUpdate extends DateTimeColumn with ClusteringOrder with Descending
+object HostInfo extends ((String,String,List[String],Option[FCInfo], ZonedDateTime)=>HostInfo) {
+  def fromXml(xml:NodeSeq, timestamp:ZonedDateTime):Either[String, HostInfo] = try {
+    val fcInfos = if ((xml \ "fibrechannel").length==0){
+      None
+    } else {
+      FCInfo.fromXml(xml \ "fibrechannel") match {
+        case Left(err)=>throw new RuntimeException(err) //this gets picked up just below
+        case Right(info)=>
+          if(info.domains.isEmpty){
+            None
+          } else {
+            Some(info)
+          }
+      }
+    }
+    Right(new HostInfo(xml \@ "hostname",xml \@ "computerName", (xml \ "ipAddresses").map(_.text).toList, fcInfos, timestamp))
+  } catch {
+    case ex:Throwable=>
+      Left(ex.toString)
+  }
 }
+case class HostInfo(hostName:String, computerName:String, ipAddresses: List[String], fibreChannel:Option[FCInfo], lastUpdate:ZonedDateTime)

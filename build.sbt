@@ -12,11 +12,12 @@ scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq( jdbc , ehcache , ws , specs2 % Test , guice )
 
-val phantomVersion = "2.27.0"
+val elastic4sVersion = "6.0.4"
 libraryDependencies ++= Seq (
-  "com.outworkers" %% "phantom-connectors" % phantomVersion,
-  "com.outworkers" %% "phantom-dsl" % phantomVersion,
-  "com.outworkers" %% "phantom-jdk8" % phantomVersion
+  "com.sksamuel.elastic4s" %% "elastic4s-http" % elastic4sVersion,
+  "com.sksamuel.elastic4s" %% "elastic4s-circe" % elastic4sVersion,
+  "com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % "test",
+  "com.sksamuel.elastic4s" %% "elastic4s-embedded" % elastic4sVersion % "test",
 )
 val circeVersion = "0.9.3"
 libraryDependencies ++= Seq(
