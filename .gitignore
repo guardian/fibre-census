@@ -16,3 +16,4 @@ dist
 /public/javascripts/bundle.js
 /frontend/node_modules/
 !/frontend/yarn.lock
+deployment

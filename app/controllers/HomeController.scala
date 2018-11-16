@@ -20,4 +20,8 @@ class HomeController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.index("Fibre Census")("xxxx"))
   }
 
+  def healthcheck = Action {
+    Ok("ok")
+  }
+
 }
