@@ -1,3 +1,6 @@
+import com.typesafe.sbt.packager.docker
+import com.typesafe.sbt.packager.docker.Cmd
+
 name := "FibreCensus"
  
 version := "1.0" 
@@ -30,6 +33,15 @@ libraryDependencies ++= Seq(
 
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
 
+enablePlugins(DockerPlugin, AshScriptPlugin)
+version := sys.props.getOrElse("build.number","DEV")
+dockerExposedPorts := Seq(9000)
+dockerUsername  := sys.props.get("docker.username")
+dockerRepository := Some("guardianmultimedia")
+packageName in Docker := "guardianmultimedia/fibrecensus"
+packageName := "fibrecensus"
+dockerBaseImage := "openjdk:8-jdk-alpine"
+dockerAlias := docker.DockerAlias(None,sys.props.get("docker.username"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV")))
+dockerCommands ++= Seq(
 
-
-      
+)
