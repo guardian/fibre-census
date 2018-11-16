@@ -59,6 +59,36 @@ sub getComputerName {
   }
 }
 
+sub breakdownTimespec {
+    my ($timespec) = @_;
+
+    if($timespec=~/(\d+):(\d+)/){
+        return {days=>0,hours=>$1,minutes=>$2}
+    } elsif($timespec=~/(\d+)\+(\d+):(\d+)/){
+        return {days=>$1,hours=>$2,minutes=>$3}
+    }
+}
+
+sub breakdownLongDate {
+    my ($datespec) = @_;
+
+    if($datespec=~/^\s*([^\-]+)\s/){
+        return $1;
+    }
+}
+
+sub getLoginHistory {
+    my $rawHistory = `last | grep console | grep -v localhome | head`;
+    my @result;
+
+    foreach(split(/\n/, $rawHistory)){
+        if(/^([\w_]+)\s+([\w\d\.]+)\s+([^\(]+)\s*\(([\d+:]+)\)/) {
+            push @result, { "username" => $1, "location" =>$2, login=>breakdownLongDate($3), duration=>breakdownTimespec($4)}
+        }
+    }
+    return \@result;
+}
+
 sub printHash {
   my ($data,$indentLevel,$withComma)=@_;
   my $indent="";
@@ -107,6 +137,7 @@ sub printkv {
 my $computerName = getComputerName;
 my @ipInfo = getIpAddresses;
 my $fibreInfo = getFibreInfo;
+my $recentLogins = getLoginHistory;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -114,6 +145,8 @@ if($format eq "text"){
   print "\t$_\n" foreach(@ipInfo);
   print "Fibrechannel:\n";
   print Dumper($fibreInfo);
+    print "Recent logins:\n";
+    print Dumper($recentLogins);
 } elsif($format eq "json"){
   #can't assume that that "real" json module is installed....
   print "{\n";
@@ -132,7 +165,8 @@ if($format eq "text"){
     "hostname"=>$hostname,
     "computerName"=>$computerName,
     "ipAddresses"=>\@ipInfo,
-    "fibrechannel"=>$fibreInfo
+    "fibrechannel"=>$fibreInfo,
+      "recentLogins"=>$recentLogins
   };
     my $content = XMLout($data,RootName=>"data", KeyAttr=>[ ]);
 
