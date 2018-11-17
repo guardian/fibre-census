@@ -2,7 +2,6 @@ package controllers
 
 import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
-import com.sksamuel.elastic4s.http.ElasticDsl.{fieldSort, update}
 import helpers.{ESClientManager, ZonedDateTimeEncoder}
 import javax.inject.{Inject, Singleton}
 import models.RecentLogin
