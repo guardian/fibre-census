@@ -28,7 +28,7 @@ spec:
       containers:
       - env:
         - name: ES_JAVA_OPTS
-          value: -Xms7G -Xmx7G
+          value: -Xms2G -Xmx2G
         - name: bootstrap.memory_lock
           value: "true"
         - name: cluster.name
@@ -39,7 +39,7 @@ spec:
         name: fc-elasticsearch
         resources:
           requests:
-            memory: 6Gi
+            memory: 1536Mi
             cpu: 1
           limits:
             cpu: 6
