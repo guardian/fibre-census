@@ -123,3 +123,7 @@ ul.addressList {
     font-size: 0.7em;
     font-style: italic;
 }
+
+.generic-tooltip {
+    z-index: 99;
+}

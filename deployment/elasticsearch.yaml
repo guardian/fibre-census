@@ -32,7 +32,7 @@ spec:
         - name: bootstrap.memory_lock
           value: "true"
         - name: cluster.name
-          value: VidispineES
+          value: FibreCensusES
         - name: discovery.zen.ping.unicast.hosts
           value: fc-es-cluster
         image: andyg42/elasticsearch-noxpack-analysisicu:5.6.11

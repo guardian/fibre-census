@@ -12,3 +12,6 @@ GET     /assets/*file               controllers.Assets.versioned(path="/public",
 GET     /healthcheck                controllers.HomeController.healthcheck
 GET     /api/search/basic      @controllers.HostInfoController.simpleStringSearch(q:Option[String],start:Option[Int],length:Option[Int])
 POST    /api/hostinfo                   @controllers.HostInfoController.addRecord
+
+POST    /api/logins             @controllers.LoginHistoryController.updateLogins
+GET     /api/logins/:hostname   @controllers.LoginHistoryController.loginsFor(hostname,limit:Option[Int])

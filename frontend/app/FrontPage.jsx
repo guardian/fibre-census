@@ -6,6 +6,8 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import TimestampFormatter from "./common/TimestampFormatter.jsx";
 import ErrorViewComponent from "./common/ErrorViewComponent.jsx";
+import UserHistoryComponent from './UserHistoryComponent.jsx';
+import ReactTooltip from 'react-tooltip';
 
 class FrontPage extends React.Component {
     constructor(props){
@@ -30,9 +32,20 @@ class FrontPage extends React.Component {
                 headerProps: { className: 'dashboardheader'}
             },
             {
+                header: "Model",
+                key: "model",
+                headerProps: { className: 'dashboardheader'}
+            },
+            {
                 header: "Computer Name",
                 key: "computerName",
                 headerProps: { className: 'dashboardheader'}
+            },
+            {
+                header: "Last User",
+                key: "hostName",
+                headerProps: { className: 'dashboardheader'},
+                render: (hostname)=><UserHistoryComponent hostname={hostname} limit={1}/>
             },
             {
                 header: "IP Addressess",
@@ -82,7 +95,7 @@ class FrontPage extends React.Component {
             results: [],
             loading: false,
             lastError: null,
-            showRelativeTime: false
+            showRelativeTime: true
         };
 
         this.updateSearchTerms = this.updateSearchTerms.bind(this);
@@ -111,10 +124,13 @@ class FrontPage extends React.Component {
         return Object.assign({
             "hostName": rawData.hostName,
             "computerName": rawData.computerName,
+            "model": rawData.model,
+            "hwUUID": rawData.hwUUID,
             "ipAddresses": rawData.ipAddresses,
             "lastUpdate": rawData.lastUpdate
         }, fcData)
     }
+
     refresh(){
         const searchTerm = encodeURIComponent(this.state.searchTerm ? this.state.searchTerm : "*");
 
@@ -149,6 +165,7 @@ class FrontPage extends React.Component {
                 />
             }
             </div>
+            <ReactTooltip className="generic-tooltip"/>
         </div>
 
     }

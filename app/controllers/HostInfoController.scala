@@ -6,10 +6,10 @@ import akka.actor.ActorSystem
 import akka.stream.{ActorMaterializer, Materializer}
 import com.sksamuel.elastic4s.http.ElasticDsl.update
 import helpers.{ESClientManager, ZonedDateTimeEncoder}
-import javax.inject.Inject
+import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Logger}
 import play.api.mvc.{AbstractController, ControllerComponents, PlayBodyParsers}
-import models.HostInfo
+import models.{HostInfo, RecentLogin}
 import responses.{GenericErrorResponse, ObjectListResponse}
 import io.circe.generic.auto._
 import io.circe.syntax._
@@ -22,6 +22,7 @@ import scala.util.{Failure, Success}
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.Future
 
+@Singleton
 class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerComponents,
                                     defaultTempFileCreator:TemporaryFileCreator, esClientMgr:ESClientManager)(implicit system:ActorSystem)
   extends AbstractController(cc) with PlayBodyParsers with ZonedDateTimeEncoder with Circe {
@@ -33,7 +34,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
 
 
   protected val indexName = playConfig.get[String]("elasticsearch.indexName")
-
+  protected val loginsIndex = playConfig.get[String]("elasticsearch.loginsIndexName")
   override def config:ParserConfiguration = {
     ParserConfiguration(2048*1024,10*1024*1024)
   }
@@ -48,11 +49,13 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
     HostInfo.fromXml(request.body, ZonedDateTime.now()) match {
       case Right(entry)=>
         val idToUse = s"${entry.hostName}"
+
         client.execute {
-          update(idToUse).in(s"$indexName/entry").docAsUpsert(entry)
+            update(idToUse).in(s"$indexName/entry").docAsUpsert(entry),
         }.map({
           case Left(failure) => InternalServerError(GenericErrorResponse("elasticsearch_error", failure.error.toString).asJson)
-          case Right(success) => Ok(success.result.id)
+          case Right(success) =>
+            Ok(success.result.id)
         }).recoverWith({
           case ex:Throwable=>
             logger.error("Could not create host entry", ex)
