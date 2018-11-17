@@ -51,6 +51,18 @@ sub getFibreInfo {
   return $data;
 }
 
+sub getHardwareInfo {
+    my $hwInfo = `system_profiler SPHardwareDataType`;
+
+    my $data = {};
+
+    foreach(split(/\n/,$hwInfo)){
+        $data->{"model"} = $1 if(/^\s+Model Name: (.*)\s*$/);
+        $data->{"hw_uuid"} = $1 if(/^\s+Hardware UUID: (.*)\s*$/);
+    }
+    return $data;
+}
+
 sub getComputerName {
   my $systemInfo = `system_profiler SPSoftwareDataType`;
 
@@ -78,12 +90,12 @@ sub breakdownLongDate {
 }
 
 sub getLoginHistory {
-    my $rawHistory = `last | grep console |  head`;
+    my $rawHistory = `last | grep console | grep -v localhome |  head`;
     my @result;
 
     foreach(split(/\n/, $rawHistory)){
         if(/^([\w_]+)\s+([\w\d\.]+)\s+([^\(]+)\s*\(([\d+:]+)\)/) {
-            push @result, { "username" => $1, "location" =>$2, login=>breakdownLongDate($3), duration=>breakdownTimespec($4)}
+            push @result, { "hostname"=>$hostname, "username" => $1, "location" =>$2, login=>breakdownLongDate($3), duration=>breakdownTimespec($4)}
         }
     }
     return \@result;
@@ -138,6 +150,7 @@ my $computerName = getComputerName;
 my @ipInfo = getIpAddresses;
 my $fibreInfo = getFibreInfo;
 my $recentLogins = getLoginHistory;
+my $hwInfo = getHardwareInfo;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -147,28 +160,19 @@ if($format eq "text"){
   print Dumper($fibreInfo);
     print "Recent logins:\n";
     print Dumper($recentLogins);
-} elsif($format eq "json"){
-  #can't assume that that "real" json module is installed....
-  print "{\n";
-  printkv("hostname",$hostname,"\t",1,1);
-  printkv("computerName",$computerName,"\t",1,1);
-  print "\t\"ipAddresses\": [\n";
-  my @addlist = map "\"$_\"", @ipInfo;
-  my $addOut = join(",", @addlist);
-  print $addOut;
-  print "\t],\n";
-  print "\t\"fibrechannel\": ";
-  printHash($fibreInfo,2);
-  print "}\n";
+    print "Hardware info:\n";
+    print Dumper($hwInfo);
 } elsif($format eq "xml"){
   my $data = {
     "hostname"=>$hostname,
     "computerName"=>$computerName,
     "ipAddresses"=>\@ipInfo,
-    "fibrechannel"=>$fibreInfo
+    "fibrechannel"=>$fibreInfo,
+      "model"=>$hwInfo->{"model"},
+      "hw_uuid"=>$hwInfo->{"hw_uuid"}
   };
-    my $content = XMLout($data,RootName=>"data", KeyAttr=>[ ]);
-    my $loginsContent = XMLout($recentLogins,RootName=>"logins");
+    my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName"]);
+    my $loginsContent = XMLout({recentLogins=>$recentLogins},RootName=>"logins", KeyAttr => "recentLogin");
 
     if($outputUri){
         my $ua=LWP::UserAgent->new;
@@ -180,6 +184,13 @@ if($format eq "text"){
         } else {
             print $content . "\n";
             print "Could not send report to $outputUri: ".$response->decoded_content;
+        }
+        my $loginresponse =$ua->post("$outputUri/api/logins", Content=>$loginsContent, "Content-Type"=>"application/xml");
+        if($loginresponse->is_success){
+            print "Sent report to $outputUri"
+        } else {
+            print $content . "\n";
+            print "Could not send report to $outputUri: ".$loginresponse->decoded_content;
         }
     } else {
         print $content . "\n";

@@ -6,7 +6,7 @@ import io.circe.generic.auto
 
 import scala.xml.NodeSeq
 
-object HostInfo extends ((String,String,List[String],Option[FCInfo], ZonedDateTime)=>HostInfo) {
+object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], ZonedDateTime)=>HostInfo) {
   def fromXml(xml:NodeSeq, timestamp:ZonedDateTime):Either[String, HostInfo] = try {
     val fcInfos = if ((xml \ "fibrechannel").length==0){
       None
@@ -21,11 +21,12 @@ object HostInfo extends ((String,String,List[String],Option[FCInfo], ZonedDateTi
           }
       }
     }
-    Right(new HostInfo(xml \@ "hostname",xml \@ "computerName", (xml \ "ipAddresses").map(_.text).toList, fcInfos, timestamp))
+    Right(new HostInfo(xml \@ "hostname",xml \@ "computerName", xml \@ "model", xml \@ "hw_uuid",
+      (xml \ "ipAddresses").map(_.text).toList, fcInfos, timestamp))
   } catch {
     case ex:Throwable=>
       Left(ex.toString)
   }
 }
 
-case class HostInfo(hostName:String, computerName:String, ipAddresses: List[String], fibreChannel:Option[FCInfo], lastUpdate:ZonedDateTime)
+case class HostInfo(hostName:String, computerName:String, model:String, hwUUID:String, ipAddresses: List[String], fibreChannel:Option[FCInfo], lastUpdate:ZonedDateTime)
