@@ -95,7 +95,7 @@ td {
     padding-left: 5px;
 }
 
-tr.dashboardheader, th.dashboardheader {
+tr.dashboardheader, th.dashboardheader, div.dashboardheader {
     font-size:1.1em;
     background-color: #AAAAFF;
     border: 1px solid black;
