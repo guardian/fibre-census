@@ -4,7 +4,7 @@ import axios from 'axios';
 import { ReactTableDefaults } from 'react-table';
 import 'react-table/react-table.css'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TimestampFormatter from "./common/TimestampFormatter.jsx";
 import ErrorViewComponent from "./common/ErrorViewComponent.jsx";
 import UserHistoryComponent from './UserHistoryComponent.jsx';
@@ -42,7 +42,7 @@ class FrontPage extends React.Component {
             {
                 Header:"Last User",
                 accessor: "hostName",
-                render: (props)=><UserHistoryComponent hostname={props.value} limit={1}/>
+                Cell: (props)=><UserHistoryComponent hostname={props.value} limit={1}/>
             },
             {
                 Header:"IP Addressess",
@@ -72,6 +72,14 @@ class FrontPage extends React.Component {
             {
                 Header:"Fibre adaptor model",
                 accessor: "fcAdaptor",
+            },
+            {
+                Header: "DenyDLC active on",
+                accessor: "denyDlcVolumes",
+                Cell: (props)=>props.value ?
+                    <ul className="addressList">{props.value.map(entry=><li key={entry}><FontAwesomeIcon icon="hdd" style={{marginRight: "0.5em"}}/>{entry}</li>)}</ul> :
+                    <span className="small-info">none</span>
+                ,
             },
             {
                 Header:"Snapshot time",
@@ -117,7 +125,8 @@ class FrontPage extends React.Component {
             "model": rawData.model,
             "hwUUID": rawData.hwUUID,
             "ipAddresses": rawData.ipAddresses,
-            "lastUpdate": rawData.lastUpdate
+            "lastUpdate": rawData.lastUpdate,
+            "denyDlcVolumes": rawData.denyDlcVolumes,
         }, fcData)
     }
 
