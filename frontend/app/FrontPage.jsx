@@ -91,6 +91,7 @@ class FrontPage extends React.Component {
         this.state = {
             searchTerm: "",
             results: [],
+            totalHitCount: null,
             loading: false,
             lastError: null,
             showRelativeTime: true
@@ -133,8 +134,8 @@ class FrontPage extends React.Component {
     refresh(){
         const searchTerm = encodeURIComponent(this.state.searchTerm ? this.state.searchTerm : "*");
 
-        this.setState({loading: true, lastError:null, data:[]}, ()=>axios.get("/api/search/basic?q=" + searchTerm).then(result=>{
-            this.setState({data: result.data.entries.map(entry=>this.mapOutData(entry)), loading: false, lastError: null});
+        this.setState({loading: true, lastError:null, data:[]}, ()=>axios.get("/api/search/basic?q=" + searchTerm + "&length=100").then(result=>{
+            this.setState({data: result.data.entries.map(entry=>this.mapOutData(entry)), totalHitCount: result.data.entryCount, loading: false, lastError: null});
         }).catch(err=>{
             console.error(err);
             this.setState({loading: false, lastError: err});
@@ -154,6 +155,11 @@ class FrontPage extends React.Component {
                 <img style={{marginLeft:"auto",marginRight:"auto",width:"44px", display: this.state.loading ? "inline" : "none" }} src="/assets/images/Spinner-1s-44px.svg"/>
             </div>
             <div style={{marginTop: "1em"}}>
+                {
+                    this.state.totalHitCount ? <span className="small-info">Showing {this.state.data.length} results from a total of {this.state.totalHitCount}</span> : <span/>
+                }
+            </div>
+            <div style={{marginTop: "0.5em"}}>
             {
                 this.state.lastError ? <ErrorViewComponent error={this.state.lastError}/> : <ReactTable
                     data={this.state.data}
