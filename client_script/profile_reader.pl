@@ -5,6 +5,7 @@ use Data::Dumper;
 use XML::Simple;
 use LWP::UserAgent;
 use Getopt::Long;
+use XML::Parser;
 
 my $format="text";
 my $useXml;
@@ -101,6 +102,20 @@ sub getLoginHistory {
     return \@result;
 }
 
+
+sub checkDenyDlc {
+    return [] if(! -f "/Library/Preferences/com.apple.xsan.plist");
+    my $xsanContent = `plutil -convert xml1 /Library/Preferences/com.apple.xsan.plist -o - | grep denyDLC -A 10`;
+    return [] if($? != 0);   #text was not found
+    my @result;
+
+    foreach(split(/\n/, $xsanContent)){
+        push @result, $1 if(/^\s+<string>(.*)<\/string>/);
+        last if(/^\s+<\/array>/)
+    }
+    return \@result;
+}
+
 sub printHash {
   my ($data,$indentLevel,$withComma)=@_;
   my $indent="";
@@ -151,6 +166,7 @@ my @ipInfo = getIpAddresses;
 my $fibreInfo = getFibreInfo;
 my $recentLogins = getLoginHistory;
 my $hwInfo = getHardwareInfo;
+my $denyDlc = checkDenyDlc;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -162,6 +178,8 @@ if($format eq "text"){
     print Dumper($recentLogins);
     print "Hardware info:\n";
     print Dumper($hwInfo);
+    print "DenyDLC run:\n";
+    print Dumper($denyDlc);
 } elsif($format eq "xml"){
   my $data = {
     "hostname"=>$hostname,
@@ -169,9 +187,10 @@ if($format eq "text"){
     "ipAddresses"=>\@ipInfo,
     "fibrechannel"=>$fibreInfo,
       "model"=>$hwInfo->{"model"},
-      "hw_uuid"=>$hwInfo->{"hw_uuid"}
+      "hw_uuid"=>$hwInfo->{"hw_uuid"},
+      "denyDlc"=>{volume=>$denyDlc}
   };
-    my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName"]);
+    my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName","denyDlc"]);
     my $loginsContent = XMLout({recentLogins=>$recentLogins},RootName=>"logins", KeyAttr => "recentLogin");
 
     if($outputUri){
