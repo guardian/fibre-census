@@ -1,9 +1,10 @@
 import React from 'react';
-import SortableTable from 'react-sortable-table';
-import TimestampFormattr from './common/TimestampFormatter.jsx';
+import ReactTable from 'react-table';
 import axios from 'axios';
+import { ReactTableDefaults } from 'react-table';
+import 'react-table/react-table.css'
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TimestampFormatter from "./common/TimestampFormatter.jsx";
 import ErrorViewComponent from "./common/ErrorViewComponent.jsx";
 import UserHistoryComponent from './UserHistoryComponent.jsx';
@@ -26,67 +27,64 @@ class FrontPage extends React.Component {
 
         this.columns = [
             {
-                header: "Host Name",
-                key: "hostName",
+                Header:"Host Name",
+                accessor: "hostName",
                 defaultSorting: "desc",
-                headerProps: { className: 'dashboardheader'}
             },
             {
-                header: "Model",
-                key: "model",
-                headerProps: { className: 'dashboardheader'}
+                Header:"Model",
+                accessor: "model",
             },
             {
-                header: "Computer Name",
-                key: "computerName",
-                headerProps: { className: 'dashboardheader'}
+                Header:"Computer Name",
+                accessor: "computerName",
             },
             {
-                header: "Last User",
-                key: "hostName",
-                headerProps: { className: 'dashboardheader'},
-                render: (hostname)=><UserHistoryComponent hostname={hostname} limit={1}/>
+                Header:"Last User",
+                accessor: "hostName",
+                Cell: (props)=><UserHistoryComponent hostname={props.value} limit={1}/>
             },
             {
-                header: "IP Addressess",
-                key: "ipAddresses",
-                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
-                headerProps: { className: 'dashboardheader'}
+                Header:"IP Addressess",
+                accessor: "ipAddresses",
+                Cell: (props)=><ul className="addressList">{props.value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
             },
             {
-                header: "Fibre WWNs",
-                key: "fcWWN",
-                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
-                headerProps: { className: 'dashboardheader'}
+                Header:"Fibre WWNs",
+                accessor: "fcWWN",
+                Cell: (props)=><ul className="addressList">{props.value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
             },
             {
-                header: "Fibre Status",
-                key: "fcStatus",
-                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
-                headerProps: { className: 'dashboardheader'}
+                Header:"Fibre Status",
+                accessor: "fcStatus",
+                Cell: (props)=><ul className="addressList">{props.value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
             },
             {
-                header: "Fibre Configured Speed",
-                key: "fcSpeed",
-                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
-                headerProps: { className: 'dashboardheader'}
+                Header:"Fibre Configured Speed",
+                accessor: "fcSpeed",
+                Cell: (props)=><ul className="addressList">{props.value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
             },
             {
-                header: "Fibre LUN count",
-                key: "fcLunCount",
-                render: (value)=><ul className="addressList">{value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
-                headerProps: { className: 'dashboardheader'}
+                Header:"Fibre LUN count",
+                accessor: "fcLunCount",
+                Cell: (props)=><ul className="addressList">{props.value.map(entry=><li key={entry}>{entry}</li>)}</ul>,
             },
             {
-                header: "Fibre adaptor model",
-                key: "fcAdaptor",
-                headerProps: { className: 'dashboardheader'}
+                Header:"Fibre adaptor model",
+                accessor: "fcAdaptor",
             },
             {
-                header: "Snapshot time",
-                key: "lastUpdate",
-                render: (value)=><TimestampFormatter relative={this.state.showRelativeTime} value={value}/>,
-                headerProps: { className: 'dashboardheader'}
+                Header: "DenyDLC active on",
+                accessor: "denyDlcVolumes",
+                Cell: (props)=>props.value ?
+                    <ul className="addressList">{props.value.map(entry=><li key={entry}><FontAwesomeIcon icon="hdd" style={{marginRight: "0.5em"}}/>{entry}</li>)}</ul> :
+                    <span className="small-info">none</span>
+                ,
+            },
+            {
+                Header:"Snapshot time",
+                accessor: "lastUpdate",
+                Cell: (props)=><TimestampFormatter relative={this.state.showRelativeTime} value={props.value}/>,
             }
         ];
 
@@ -110,7 +108,7 @@ class FrontPage extends React.Component {
             "fcWWN": rawData.fibreChannel.domains.map(dom=>dom.portWWN),
             "fcLunCount": rawData.fibreChannel.domains.map(dom=>dom.lunCount),
             "fcSpeed": rawData.fibreChannel.domains.map(dom=>dom.speed ? dom.speed : <span className="small-info">not connected</span>),
-            "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.fcStatus ? dom.fcStatus : <span className="small-info">not connected</span>),
+            "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.status ? dom.status : <span className="small-info">not connected</span>),
             "fcAdaptor": rawData.fibreChannel.productName,
         } : {
             "fcWWN": ["Not present"],
@@ -127,7 +125,8 @@ class FrontPage extends React.Component {
             "model": rawData.model,
             "hwUUID": rawData.hwUUID,
             "ipAddresses": rawData.ipAddresses,
-            "lastUpdate": rawData.lastUpdate
+            "lastUpdate": rawData.lastUpdate,
+            "denyDlcVolumes": rawData.denyDlcVolumes,
         }, fcData)
     }
 
@@ -156,12 +155,10 @@ class FrontPage extends React.Component {
             </div>
             <div style={{marginTop: "1em"}}>
             {
-                this.state.lastError ? <ErrorViewComponent error={this.state.lastError}/> : <SortableTable
+                this.state.lastError ? <ErrorViewComponent error={this.state.lastError}/> : <ReactTable
                     data={this.state.data}
                     columns={this.columns}
-                    style={this.style}
-                    iconStyle={this.iconStyle}
-                    tableProps={{className: "dashboardpanel"}}
+                    column={Object.assign({}, ReactTableDefaults.column, {headerClassName: 'dashboardheader'})}
                 />
             }
             </div>

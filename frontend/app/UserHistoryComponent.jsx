@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import ReactTooltip from 'react-tooltip';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 class UserHistoryComponent extends React.Component {
     static propTypes = {
@@ -52,7 +53,7 @@ class UserHistoryComponent extends React.Component {
     render() {
         return <ul className="addressList">
             {
-                this.state.records.map(entry=><li key={entry.loginTime} data-tip={this.details(entry)}>{entry.username}</li>)
+                this.state.records.map(entry=><li key={entry.loginTime} data-tip={this.details(entry)}><FontAwesomeIcon icon="user-alt"/>{entry.username}</li>)
             }
         </ul>
     }
