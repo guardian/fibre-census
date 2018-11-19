@@ -127,3 +127,15 @@ ul.addressList {
 .generic-tooltip {
     z-index: 99;
 }
+
+.warning {
+    background-color: #b52929;
+}
+
+.info {
+    background-color: #b2b7ff;
+}
+
+.unimportant {
+    color: #AAAAAA;
+}

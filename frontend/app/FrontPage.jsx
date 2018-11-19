@@ -9,6 +9,7 @@ import TimestampFormatter from "./common/TimestampFormatter.jsx";
 import ErrorViewComponent from "./common/ErrorViewComponent.jsx";
 import UserHistoryComponent from './UserHistoryComponent.jsx';
 import ReactTooltip from 'react-tooltip';
+import {validateRecord} from './validation.jsx';
 
 class FrontPage extends React.Component {
     constructor(props){
@@ -104,6 +105,17 @@ class FrontPage extends React.Component {
         this.refresh();
     }
 
+    rowValidationProps(state,rowInfo,column) {
+        if(rowInfo) {
+            return {
+                className: validateRecord(rowInfo.row)
+            }
+        } else {
+            return {};
+        }
+
+    }
+
     mapOutData(rawData){
         const fcData = rawData.fibreChannel!==null ? {
             "fcWWN": rawData.fibreChannel.domains.map(dom=>dom.portWWN),
@@ -165,6 +177,7 @@ class FrontPage extends React.Component {
                     data={this.state.data}
                     columns={this.columns}
                     column={Object.assign({}, ReactTableDefaults.column, {headerClassName: 'dashboardheader'})}
+                    getTrProps={this.rowValidationProps}
                 />
             }
             </div>
