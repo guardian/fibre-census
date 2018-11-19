@@ -21,7 +21,7 @@ class HostInfoSpec extends Specification {
       val doc = parser.document().docElem
       val t = ZonedDateTime.now()
       val result = HostInfo.fromXml(doc, t)
-      result must beRight(HostInfo("33212.gnm.int","33212_TV01_MMED_TEC_LOCADM_","something","fakeid",List("192.168.1.108","192.168.1.12","192.168.1.19"),None,t))
+      result must beRight(HostInfo("33212.gnm.int","33212_TV01_MMED_TEC_LOCADM_","something","fakeid",List("192.168.1.108","192.168.1.12","192.168.1.19"),None,None,t))
     }
 
     "convert an xml doc with fibrechannel info into a HostInfo model" in {
@@ -46,6 +46,7 @@ class HostInfoSpec extends Specification {
             FCDomain("Domain_1",Some("Automatic (8 Gigabit)"), Some("Link Established"), Some("24:70:00:C0:FF:1B:00:2C"), 120)
           ),"ATTO ThunderLink FC 2082"
         )),
+        None,
         t))
     }
   }
