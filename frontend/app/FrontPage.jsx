@@ -178,6 +178,7 @@ class FrontPage extends React.Component {
                     columns={this.columns}
                     column={Object.assign({}, ReactTableDefaults.column, {headerClassName: 'dashboardheader'})}
                     getTrProps={this.rowValidationProps}
+                    minRows={this.state.data.length}
                 />
             }
             </div>
