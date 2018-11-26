@@ -180,7 +180,7 @@ class FrontPage extends React.Component {
                     getTrProps={this.rowValidationProps}
                     minRows={this.state.data.length}
                     defaultPageSize={this.state.data.length}
-                    pageSizeOptions={[100]}
+                    // pageSizeOptions={[100]}
                 />
             }
             </div>
