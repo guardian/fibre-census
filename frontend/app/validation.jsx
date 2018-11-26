@@ -21,7 +21,7 @@ function validateRecord(record){
     }
 
     const actualLunCount = record.fcLunCount.filter(entry=>entry>0);
-    if(actualLunCount[0]!==120){
+    if(actualLunCount[0]!==120 && actualLunCount[0]!==20){
         console.log(record.hostName + " only has " + actualLunCount + " LUNs visible (expected 120)");
         return "warning";
     }
