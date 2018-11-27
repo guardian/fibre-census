@@ -43,7 +43,7 @@ class FrontPage extends React.Component {
             {
                 Header:"Last User",
                 accessor: "hostName",
-                Cell: (props)=><UserHistoryComponent hostname={props.value} limit={1}/>
+                Cell: (props)=><UserHistoryComponent hostname={props.value} limit={4}/>
             },
             {
                 Header:"IP Addressess",
