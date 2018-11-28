@@ -1,10 +1,11 @@
 package controllers
 
 import java.io.File
+import java.lang.ClassLoader
 import java.security.MessageDigest
 
 import akka.actor.ActorSystem
-import akka.stream.{ActorMaterializer, Materializer}
+import akka.stream.{ActorMaterializer, Materializer, scaladsl}
 import akka.stream.scaladsl.{FileIO, Keep, Sink}
 import javax.inject._
 import play.api.Logger
@@ -25,18 +26,27 @@ class HomeController @Inject()(cc: ControllerComponents, actorSystem:ActorSystem
 
   def getCacheBustingString = {
     val digester = MessageDigest.getInstance("md5")
-    val src = FileIO.fromPath(new File("public/javascripts/bundle.js").toPath,100,0L)
 
-    val materializedFlow = src.toMat(Sink.foreach(elem=>digester.update(elem.toByteBuffer)))(Keep.left).run()
+//    scaladsl.Source.fromIterator()
+//    ClassLoader.getSystemResource("public/javascripts/bundle.js")
+//    val src = FileIO.fromPath(new File("public/javascripts/bundle.js").toPath,100,0L)
+
+    val src = akka.stream.scaladsl.Source.fromIterator(()=>Source.fromURL(ClassLoader.getSystemResource("public/javascripts/bundle.js")).iter.map(_.toByte))
+    val materializedFlow = src.toMat(Sink.foreach(elem=>digester.update(elem)))(Keep.right).run()
+
     materializedFlow.map(result=>{
-      if(result.wasSuccessful){
         logger.debug("Successfully checksummed javascript")
-        Some(digester.digest().map("%02x".format(_)).mkString)
-      } else {
-        logger.warn(s"Could not checksum javascript: ${result.getError}")
-        None
-      }
+        digester.digest().map("%02x".format(_)).mkString
     })
+//    materializedFlow.map(result=>{
+//      if(result.wasSuccessful){
+//        logger.debug("Successfully checksummed javascript")
+//        Some(digester.digest().map("%02x".format(_)).mkString)
+//      } else {
+//        logger.warn(s"Could not checksum javascript: ${result.getError}")
+//        None
+//      }
+//    })
   }
 
   private val maybeCacheBustingString = getCacheBustingString
@@ -50,11 +60,10 @@ class HomeController @Inject()(cc: ControllerComponents, actorSystem:ActorSystem
   def index = Action {
     val cbString = if(maybeCacheBustingString.isCompleted){
       maybeCacheBustingString.value match {
-        case Some(Success(Some(value)))=>value
-        case Some(Success(None))=>"xxxx"
+        case Some(Success(value))=>value
         case Some(Failure(err))=>
-          logger.error("Could not calculate cachebusting: ", err)
-          "yyyy"
+          logger.error("Could not calculate cachebusting string", err)
+          "xxxx"
         case None=>
           logger.error("Cachebusting calculation worked but no result")
           "zzzz"

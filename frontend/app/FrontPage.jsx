@@ -10,6 +10,7 @@ import ErrorViewComponent from "./common/ErrorViewComponent.jsx";
 import UserHistoryComponent from './UserHistoryComponent.jsx';
 import ReactTooltip from 'react-tooltip';
 import {validateRecord} from './validation.jsx';
+import FibreDriversComponent from "./FibreDriversComponent.jsx";
 
 class FrontPage extends React.Component {
     constructor(props){
@@ -75,12 +76,16 @@ class FrontPage extends React.Component {
                 accessor: "fcAdaptor",
             },
             {
+                Header:"Fibre drivers present",
+                accessor: "driverInfo",
+                Cell: (props)=><FibreDriversComponent entryList={props.value} showDetails={this.state.showDriverDetails}/>
+            },
+            {
                 Header: "DenyDLC active on",
                 accessor: "denyDlcVolumes",
                 Cell: (props)=>props.value ?
                     <ul className="addressList">{props.value.map(entry=><li key={entry}><FontAwesomeIcon icon="hdd" style={{marginRight: "0.5em"}}/>{entry}</li>)}</ul> :
-                    <span className="small-info">none</span>
-                ,
+                    <span className="small-info">none</span>,
             },
             {
                 Header:"Snapshot time",
@@ -95,7 +100,8 @@ class FrontPage extends React.Component {
             totalHitCount: null,
             loading: false,
             lastError: null,
-            showRelativeTime: true
+            showRelativeTime: true,
+            showDriverDetails: true
         };
 
         this.updateSearchTerms = this.updateSearchTerms.bind(this);
@@ -123,12 +129,14 @@ class FrontPage extends React.Component {
             "fcSpeed": rawData.fibreChannel.domains.map(dom=>dom.speed ? dom.speed : <span className="small-info">not connected</span>),
             "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.status ? dom.status : <span className="small-info">not connected</span>),
             "fcAdaptor": rawData.fibreChannel.productName,
+            "driverInfo": rawData.driverInfo ? rawData.driverInfo : null
         } : {
             "fcWWN": ["Not present"],
             "fcLunCount": ["Not present"],
             "fcSpeed": ["Not present"],
             "fcStatus": ["Not present"],
-            "fcAdaptor": "Not present"
+            "fcAdaptor": "Not present",
+            "driverInfo": rawData.driverInfo ? rawData.driverInfo : null
         };
 
 
@@ -165,6 +173,8 @@ class FrontPage extends React.Component {
                 <label htmlFor="search-box">Search:</label>
                 <input type="text" id="search-box" style={{width: "50%"}} onChange={this.updateSearchTerms}/>
                 <img style={{marginLeft:"auto",marginRight:"auto",width:"44px", display: this.state.loading ? "inline" : "none" }} src="/assets/images/Spinner-1s-44px.svg"/>
+                <input type="checkbox" checked={this.state.showDriverDetails} id="driver-details-check" onChange={event=>this.setState({showDriverDetails: !this.state.showDriverDetails})}/>
+                <label htmlFor="driver-details-check">Show driver details</label>
             </div>
             <div style={{marginTop: "1em"}}>
                 {
@@ -178,6 +188,8 @@ class FrontPage extends React.Component {
                     columns={this.columns}
                     column={Object.assign({}, ReactTableDefaults.column, {headerClassName: 'dashboardheader'})}
                     getTrProps={this.rowValidationProps}
+                    defaultPageSize={75}
+                    pageSizeOptions={[25,50,75,100]}
                 />
             }
             </div>
