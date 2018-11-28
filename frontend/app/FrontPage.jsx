@@ -77,19 +77,18 @@ class FrontPage extends React.Component {
             {
                 Header:"Fibre drivers present",
                 accessor: "driverInfo",
-                Cell: (props)=>
+                Cell: (props)=>props.value ?
                     <ul className="addressList">{
                         props.value.map(entry=>
                             <li key={entry.driverName}>{entry.driverName}@{entry.version}; dependencies {entry.dependencies.toLowerCase()}; loaded: {entry.loaded ? "yes" : "no"}</li>)
-                    }</ul>
+                    }</ul> : <span className="small-info">none</span>
             },
             {
                 Header: "DenyDLC active on",
                 accessor: "denyDlcVolumes",
                 Cell: (props)=>props.value ?
                     <ul className="addressList">{props.value.map(entry=><li key={entry}><FontAwesomeIcon icon="hdd" style={{marginRight: "0.5em"}}/>{entry}</li>)}</ul> :
-                    <span className="small-info">none</span>
-                ,
+                    <span className="small-info">none</span>,
             },
             {
                 Header:"Snapshot time",
@@ -132,14 +131,14 @@ class FrontPage extends React.Component {
             "fcSpeed": rawData.fibreChannel.domains.map(dom=>dom.speed ? dom.speed : <span className="small-info">not connected</span>),
             "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.status ? dom.status : <span className="small-info">not connected</span>),
             "fcAdaptor": rawData.fibreChannel.productName,
-            "driverInfo": rawData.driverInfo ? rawData.driverInfo : ["Not present"]
+            "driverInfo": rawData.driverInfo ? rawData.driverInfo : null
         } : {
             "fcWWN": ["Not present"],
             "fcLunCount": ["Not present"],
             "fcSpeed": ["Not present"],
             "fcStatus": ["Not present"],
             "fcAdaptor": "Not present",
-            "driverInfo": rawData.driverInfo ? rawData.driverInfo : ["Not present"]
+            "driverInfo": rawData.driverInfo ? rawData.driverInfo : null
         };
 
 
