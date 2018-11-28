@@ -10,7 +10,7 @@ class TimestampFormatter extends React.Component {
     };
 
     render(){
-        const formatToUse = this.props.formatString ? this.props.formatString : "";
+        const formatToUse = this.props.formatString ? this.props.formatString : "dd Do MMM";
         const m = moment(this.props.value);
 
         const out = this.props.relative ? m.fromNow(false) : m.format(formatToUse);
