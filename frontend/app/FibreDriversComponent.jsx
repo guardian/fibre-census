@@ -9,7 +9,7 @@ class FibreDriversComponent extends React.Component {
 
     renderSingleEntry(entry){
         //{entry.driverName}@{entry.version}; dependencies {entry.dependencies.toLowerCase()}; loaded: {entry.loaded ? "yes" : "no"}
-        return <li key={entry.driverName}>
+        return <li key={entry.driverName} className={entry.loaded ? "" : "driver-not-loaded"}>
             <span style={{display: "block"}}>{entry.driverName}</span>
             <ul className="addressList" style={{display: this.props.showDetails ? "inherit" : "none" }}>
                 <li className="small-info">{entry.getInfoString}</li>

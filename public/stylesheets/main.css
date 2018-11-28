@@ -146,3 +146,7 @@ ul.sub-list-1 {
 .unimportant {
     color: #AAAAAA;
 }
+
+.driver-not-loaded {
+    color: #888888;
+}
