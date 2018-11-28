@@ -54,7 +54,7 @@ class UserHistoryComponent extends React.Component {
     render() {
         return <ul className="addressList">
             {
-                this.state.records.map(entry=><li key={entry.loginTime} data-tip={this.details(entry)}><FontAwesomeIcon icon="user-alt"/>{entry.username} <TimestampFormatter relative={false} value={entry.loginTime}/></li>)
+                this.state.records.map(entry=><li key={entry.loginTime} data-tip={this.details(entry)}><FontAwesomeIcon icon="user-alt"/>{entry.username} – <TimestampFormatter relative={false} value={entry.loginTime}/></li>)
             }
         </ul>
     }
