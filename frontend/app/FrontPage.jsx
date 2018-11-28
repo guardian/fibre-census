@@ -10,6 +10,7 @@ import ErrorViewComponent from "./common/ErrorViewComponent.jsx";
 import UserHistoryComponent from './UserHistoryComponent.jsx';
 import ReactTooltip from 'react-tooltip';
 import {validateRecord} from './validation.jsx';
+import FibreDriversComponent from "./FibreDriversComponent.jsx";
 
 class FrontPage extends React.Component {
     constructor(props){
@@ -77,11 +78,7 @@ class FrontPage extends React.Component {
             {
                 Header:"Fibre drivers present",
                 accessor: "driverInfo",
-                Cell: (props)=>props.value ?
-                    <ul className="addressList">{
-                        props.value.map(entry=>
-                            <li key={entry.driverName}>{entry.driverName}@{entry.version}; dependencies {entry.dependencies.toLowerCase()}; loaded: {entry.loaded ? "yes" : "no"}</li>)
-                    }</ul> : <span className="small-info">none</span>
+                Cell: (props)=><FibreDriversComponent entryList={props.value} showDetails={this.state.showDriverDetails}/>
             },
             {
                 Header: "DenyDLC active on",
@@ -103,7 +100,8 @@ class FrontPage extends React.Component {
             totalHitCount: null,
             loading: false,
             lastError: null,
-            showRelativeTime: true
+            showRelativeTime: true,
+            showDriverDetails: true
         };
 
         this.updateSearchTerms = this.updateSearchTerms.bind(this);
@@ -175,6 +173,8 @@ class FrontPage extends React.Component {
                 <label htmlFor="search-box">Search:</label>
                 <input type="text" id="search-box" style={{width: "50%"}} onChange={this.updateSearchTerms}/>
                 <img style={{marginLeft:"auto",marginRight:"auto",width:"44px", display: this.state.loading ? "inline" : "none" }} src="/assets/images/Spinner-1s-44px.svg"/>
+                <input type="checkbox" checked={this.state.showDriverDetails} id="driver-details-check" onChange={event=>this.setState({showDriverDetails: !this.state.showDriverDetails})}/>
+                <label htmlFor="driver-details-check">Show driver details</label>
             </div>
             <div style={{marginTop: "1em"}}>
                 {
