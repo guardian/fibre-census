@@ -53,6 +53,9 @@ object FCInfo extends((Seq[FCDomain], String)=>FCInfo) {
     } else {
       Right(new FCInfo(domains.collect({case Right(dom)=>dom}), xml \@"Product"))
     }
+  } catch {
+    case ex:Throwable=>
+      Left(ex.toString)
   }
 }
 

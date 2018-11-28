@@ -75,6 +75,15 @@ class FrontPage extends React.Component {
                 accessor: "fcAdaptor",
             },
             {
+                Header:"Fibre drivers present",
+                accessor: "driverInfo",
+                Cell: (props)=>
+                    <ul className="addressList">{
+                        props.value.map(entry=>
+                            <li key={entry.driverName}>{entry.driverName}@{entry.version}; dependencies {entry.dependencies.toLowerCase()}; loaded: {entry.loaded ? "yes" : "no"}</li>)
+                    }</ul>
+            },
+            {
                 Header: "DenyDLC active on",
                 accessor: "denyDlcVolumes",
                 Cell: (props)=>props.value ?
@@ -123,12 +132,14 @@ class FrontPage extends React.Component {
             "fcSpeed": rawData.fibreChannel.domains.map(dom=>dom.speed ? dom.speed : <span className="small-info">not connected</span>),
             "fcStatus": rawData.fibreChannel.domains.map(dom=>dom.status ? dom.status : <span className="small-info">not connected</span>),
             "fcAdaptor": rawData.fibreChannel.productName,
+            "driverInfo": rawData.driverInfo ? rawData.driverInfo : ["Not present"]
         } : {
             "fcWWN": ["Not present"],
             "fcLunCount": ["Not present"],
             "fcSpeed": ["Not present"],
             "fcStatus": ["Not present"],
-            "fcAdaptor": "Not present"
+            "fcAdaptor": "Not present",
+            "driverInfo": rawData.driverInfo ? rawData.driverInfo : ["Not present"]
         };
 
 
@@ -178,6 +189,8 @@ class FrontPage extends React.Component {
                     columns={this.columns}
                     column={Object.assign({}, ReactTableDefaults.column, {headerClassName: 'dashboardheader'})}
                     getTrProps={this.rowValidationProps}
+                    defaultPageSize={75}
+                    pageSizeOptions={[25,50,75,100]}
                 />
             }
             </div>

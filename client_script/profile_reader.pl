@@ -72,6 +72,42 @@ sub getComputerName {
   }
 }
 
+sub getDriverInfo {
+    my $systemInfo = `system_profiler SPExtensionsDataType`;
+
+    my $data = {};
+
+    my $currentSection;
+    foreach(split(/\n/, $systemInfo)){
+        $currentSection=$1 if(/^\s*(ATTO.*):$/);
+        $currentSection=undef if(defined $currentSection and /^\s*$/ and defined $data->{$currentSection}->{"Version"});
+        if(defined $currentSection) {
+            $data->{$currentSection}->{"Version"} = $1 if (/^\s*Version: (.*)$/);
+            $data->{$currentSection}->{"BundleID"} = $1 if (/^\s*Bundle ID: (.*)$/);
+            $data->{$currentSection}->{"Version"} = $1 if (/^\s*Version: (.*)$/);
+            $data->{$currentSection}->{"Loaded"} = $1 if (/^\s*Loaded: (.*)$/);
+            $data->{$currentSection}->{"GetInfoString"} = $1 if (/^\s*Get Info String: (.*)$/);
+            $data->{$currentSection}->{"ObtainedFrom"} = $1 if (/^\s*Obtained From: (.*)$/);
+            $data->{$currentSection}->{"Kind"} = $1 if (/^\s*Kind: (.*)$/);
+            $data->{$currentSection}->{"Architecture"} = $1 if (/^\s*Architecture: (.*)$/);
+            $data->{$currentSection}->{"Location"} = $1 if (/^\s*Location: (.*)$/);
+            $data->{$currentSection}->{"KextVersion"} = $1 if (/^\s*Kext Version: (.*)$/);
+            $data->{$currentSection}->{"Loadable"} = $1 if (/^\s*Loadable: (.*)$/);
+            $data->{$currentSection}->{"Dependencies"} = $1 if (/^\s*Dependencies: (.*)$/);
+            $data->{$currentSection}->{"SignedBy"} = $1 if (/^\s*Signed by: (.*)$/);
+        }
+    }
+
+    my $arrayOutput=[];
+
+    foreach(keys %$data){
+        my $updatedHash = $data->{$_};
+        $updatedHash->{"DriverName"} = $_;
+        push @$arrayOutput, $updatedHash;
+    }
+    return $arrayOutput;
+}
+
 sub breakdownTimespec {
     my ($timespec) = @_;
 
@@ -161,12 +197,20 @@ sub printkv {
   }
 }
 
+print "Collecting computer name...\n";
 my $computerName = getComputerName;
+print "Collecting IP addresses...\n";
 my @ipInfo = getIpAddresses;
+print "Collecting fibrechannel info...\n";
 my $fibreInfo = getFibreInfo;
+print "Collecting login history...\n";
 my $recentLogins = getLoginHistory;
+print "Collecting hardware info...\n";
 my $hwInfo = getHardwareInfo;
+print "Collecting DLC status...\n";
 my $denyDlc = checkDenyDlc;
+print "Collecting fibre drivers info...\n";
+my $driverInfo = getDriverInfo;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -178,6 +222,8 @@ if($format eq "text"){
     print Dumper($recentLogins);
     print "Hardware info:\n";
     print Dumper($hwInfo);
+    print "Driver info:\n";
+    print Dumper($driverInfo);
     print "DenyDLC run:\n";
     print Dumper($denyDlc);
 } elsif($format eq "xml"){
@@ -188,8 +234,10 @@ if($format eq "text"){
     "fibrechannel"=>$fibreInfo,
       "model"=>$hwInfo->{"model"},
       "hw_uuid"=>$hwInfo->{"hw_uuid"},
-      "denyDlc"=>{volume=>$denyDlc}
+      "denyDlc"=>{"volume"=>$denyDlc},
+      "driverInfo"=>{"driver"=>$driverInfo}
   };
+
     my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName","denyDlc"]);
     my $loginsContent = XMLout({recentLogins=>$recentLogins},RootName=>"logins", KeyAttr => "recentLogin");
 
