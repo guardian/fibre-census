@@ -11,14 +11,14 @@ lazy val `fibrecensus` = (project in file("."))
     .settings(version := sys.props.getOrElse("build.number","DEV"),
       dockerExposedPorts := Seq(9000),
       dockerUsername  := sys.props.get("docker.username"),
-dockerRepository := Some("guardianmultimedia"),
-packageName in Docker := "guardianmultimedia/fibrecensus",
-packageName := "fibrecensus",
-dockerBaseImage := "openjdk:8-jdk-alpine",
-dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV"))),
-dockerCommands ++= Seq(
-
-))
+      dockerRepository := Some("guardianmultimedia"),
+      packageName in Docker := "guardianmultimedia/fibrecensus",
+      packageName := "fibrecensus",
+      dockerBaseImage := "openjdk:8-jdk-alpine",
+      dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV"))),
+      dockerCommands ++= Seq(
+      
+      ))
 
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
       
