@@ -1,4 +1,4 @@
-import java.time.temporal.TemporalAmount
+import java.time.temporal.{ChronoField, TemporalAmount}
 import java.time.{Duration, LocalDateTime, ZonedDateTime}
 
 import models.RecentLogin
@@ -14,7 +14,7 @@ class RecentLoginSpec extends Specification {
       val parser = ConstructingParser.fromSource(Source.fromString(sampleXml), preserveWS = false)
       val doc = parser.document().docElem
       val t = ZonedDateTime.now()
-      val result = RecentLogin.fromXml(doc)
+      val result = RecentLogin.fromXml(doc, forcedYear = Some(2018))
 
       result must beRight(RecentLogin(
         "mycomputer",
