@@ -28,6 +28,19 @@ object FCDomain extends ((String,Option[String],Option[String], Option[String],I
     case ex:Throwable=>
       Left(ex.toString)
   }
+
+  /**
+    * matches corresponding FC domains in `firstSeq` to the same one with corresponding name in `secondSeq`.
+    * if no corresponding domain exists in `secondSeq`, then None is returned as the corresponding value
+    * if no corresponding domain exists in `firstSeq`, then the value is not included in the return value
+    * @param firstSeq first sequence of FCDomain to check
+    * @param secondSeq second sequence of FCDomain to check
+    * @return a Sequence of 2-tuples, same length as `firstSeq`. First element is the domain from firstSeq, second element is
+    *         either the corresponding element from secondSeq or None.
+    */
+  def matchup(firstSeq:Seq[FCDomain], secondSeq:Seq[FCDomain]):Seq[Tuple2[FCDomain,Option[FCDomain]]] =
+    firstSeq.map(dom_1=>Tuple2(dom_1, secondSeq.find(dom_2=>dom_2.name==dom_1.name)))
+
 }
 
 case class FCDomain(name:String, speed:Option[String],status:Option[String], portWWN:Option[String], lunCount:Int)

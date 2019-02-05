@@ -47,6 +47,18 @@ object DriverInfo extends ((String, String, String, String, String, String,Strin
         Left(ex.toString)
     }
   }
+
+  /**
+    * matches corresponding DriverInfo structs in `firstSeq` to the same one with corresponding name in `secondSeq`.
+    * if no corresponding domain exists in `secondSeq`, then None is returned as the corresponding value
+    * if no corresponding domain exists in `firstSeq`, then the value is not included in the return value
+    * @param firstSeq first sequence of DriverInfo to check
+    * @param secondSeq second sequence of DriverInfo to check
+    * @return a Sequence of 2-tuples, same length as `firstSeq`. First element is the domain from firstSeq, second element is
+    *         either the corresponding element from secondSeq or None.
+    */
+  def matchup(firstSeq:Seq[DriverInfo], secondSeq:Seq[DriverInfo]):Seq[Tuple2[DriverInfo,Option[DriverInfo]]] =
+    firstSeq.map(di=>Tuple2(di, secondSeq.find(secondInf=>secondInf.driverName==di.driverName)))
 }
 
 case class DriverInfo(driverName:String, bundleId:String, version:String, signedBy:String, kextVersion:String,

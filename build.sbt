@@ -28,6 +28,11 @@ scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq( jdbc , ehcache , ws , specs2 % Test , guice )
 
+val akkaVersion = "2.5.18"
+libraryDependencies ++= Seq(
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion
+)
+
 val elastic4sVersion = "6.0.4"
 libraryDependencies ++= Seq (
   "com.sksamuel.elastic4s" %% "elastic4s-http" % elastic4sVersion,
