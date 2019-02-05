@@ -17,6 +17,11 @@
         <!-- 600 seconds = 10 mins -->
         <integer>600</integer>
 
+        <key>EnvironmentVariables</key>
+        <dict>
+            <key>PERL_LWP_SSL_VERIFY_HOSTNAME</key>
+            <string>0</string>
+        </dict>
         <key>StandardOutPath</key>
         <string>/var/log/fibrecensus-reader.log</string>
         <key>StandardErrorPath</key>
