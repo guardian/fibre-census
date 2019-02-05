@@ -6,6 +6,7 @@ use XML::Simple;
 use LWP::UserAgent;
 use Getopt::Long;
 use XML::Parser;
+use DateTime;
 
 my $format="text";
 my $useXml;
@@ -197,6 +198,8 @@ sub printkv {
   }
 }
 
+print "Run starting on $hostname at " . DateTime->now() . " UTC\n";
+print "--------------------------------------------\n";
 print "Collecting computer name...\n";
 my $computerName = getComputerName;
 print "Collecting IP addresses...\n";
@@ -264,3 +267,6 @@ if($format eq "text"){
         print $loginsContent . "\n";
     }
 }
+
+print "Run completed at " . DateTime->now() . " UTC\n";
+print "--------------------------------------------\n";

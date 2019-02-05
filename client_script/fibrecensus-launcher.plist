@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+
+<plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>com.gu.fibrecensus-launcher</string>
+        <key>ProgramArguments</key>
+        <array>
+            <string>/usr/bin/perl</string>
+            <string>/usr/local/bin/profile_reader.pl</string>
+            <string>--xml</string>
+            <string>--out=https://server-uri-here</string>
+        </array>
+        <key>StartInterval</key>
+        <!-- 600 seconds = 10 mins -->
+        <integer>600</integer>
+
+        <key>EnvironmentVariables</key>
+        <dict>
+            <key>PERL_LWP_SSL_VERIFY_HOSTNAME</key>
+            <string>0</string>
+        </dict>
+        <key>StandardOutPath</key>
+        <string>/var/log/fibrecensus-reader.log</string>
+        <key>StandardErrorPath</key>
+        <string>/var/log/fibrecensus-reader.log</string>
+    </dict>
+</plist>
