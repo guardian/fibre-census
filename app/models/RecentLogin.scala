@@ -7,10 +7,13 @@ import java.time.format.{DateTimeFormatter, DateTimeFormatterBuilder}
 import java.time.temporal.{ChronoField, ChronoUnit, TemporalAccessor, TemporalUnit}
 
 object RecentLogin extends ((String, String, String, LocalDateTime, Duration)=>RecentLogin) {
-  private val rubbishFormat = new DateTimeFormatterBuilder()
+  private def parseFormat(forcedYear:Option[Int]) = new DateTimeFormatterBuilder()
     .appendPattern("EE MMM d HH:mm:ss")
     .parseStrict()
-    .parseDefaulting(ChronoField.YEAR, LocalDateTime.now().get(ChronoField.YEAR))
+    .parseDefaulting(ChronoField.YEAR, forcedYear match {
+      case None=> LocalDateTime.now().get(ChronoField.YEAR)
+      case Some(year)=> year
+    })
     .parseDefaulting(ChronoField.SECOND_OF_MINUTE, 0)
     .toFormatter()
 
@@ -23,9 +26,9 @@ object RecentLogin extends ((String, String, String, LocalDateTime, Duration)=>R
     Duration.of(totalSeconds, ChronoUnit.SECONDS)
   }
 
-  def fromXml(xml:NodeSeq):Either[String,RecentLogin] = try {
+  def fromXml(xml:NodeSeq, forcedYear:Option[Int]=None):Either[String,RecentLogin] = try {
     val lastLoginTime = (xml \@ "login").replaceAll("  +", " ") + ":00"
-    val parsed = rubbishFormat.parse(lastLoginTime)
+    val parsed = parseFormat(forcedYear).parse(lastLoginTime)
 
     Right(new RecentLogin(
       xml \@ "hostname", xml \@ "username", xml \@ "location", LocalDateTime.from(parsed), durationFromXmlObj(xml \ "duration")
