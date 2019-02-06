@@ -1,12 +1,13 @@
 package services
 
 import akka.actor.{Actor, ActorSystem}
+import com.risksense.ipaddr.{IpAddress, IpNetwork}
 import helpers.ZonedDateTimeEncoder
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.auto._
 import javax.inject.Inject
 import models._
-import play.api.Logger
+import play.api.{Configuration, Logger}
 
 import scala.annotation.switch
 import scala.concurrent.duration._
@@ -39,7 +40,7 @@ object AlertsActor {
   case class ParameterAlert(fieldName:String, alertDesc:String) extends AAMsg
 }
 
-class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTimeEncoder {
+class AlertsActor @Inject() (system:ActorSystem, config:Configuration) extends Actor with ZonedDateTimeEncoder {
   private val logger = Logger(getClass)
   import AlertsActor._
   import akka.pattern.ask
@@ -64,11 +65,37 @@ class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTim
     case CheckParameterStringList(fieldName,diff)=>
       (fieldName: @switch) match {
         case "ipAddresses"=>
-          //placeholder, do something with ip address check here
-          sender() ! ParameterInRange(fieldName)
+          //check whether we have at least one address that is on the metadata network
+          config.getOptional[String]("san.networkCIDR") match {
+            case Some(nwCidr)=>
+              val net = IpNetwork(nwCidr)
+              val mdNetworkAddresses = diff.newValue.filter(ipString=>net.contains(ipString))
+              if(mdNetworkAddresses.isEmpty){
+                sender() ! ParameterAlert(fieldName, "No metadata network IP address detected")
+              } else {
+                logger.info(s"Found metadata IP address(es) $mdNetworkAddresses")
+                sender() ! ParameterInRange(fieldName)
+              }
+            case None=>
+              logger.warn("Cannot check IP address change, need to set san.networkCIDR in the configuration")
+              sender() ! ParameterInRange(fieldName)
+          }
         case "denyDlcVolumes"=>
-          //placeholder, do something with deny DLC volumes check here
-          sender() ! ParameterInRange(fieldName)
+          //check whether the denyDLC count has dropped
+          if(diff.newValue.length<diff.oldValue.length){
+            val dropCount = diff.oldValue.length - diff.newValue.length
+            val droppedDenyDlc = diff.oldValue.filter(entry=> !diff.newValue.contains(entry))
+            val msg = s"Dropped $dropCount denyDLC entries: $droppedDenyDlc"
+            logger.info(msg)
+            sender() ! ParameterAlert(fieldName, msg)
+          } else if(diff.newValue.length<diff.oldValue.length){
+            val addCount = diff.newValue.length - diff.oldValue.length
+            logger.info(s"Added $addCount new denyDLC entries")
+            sender() ! ParameterInRange(fieldName)
+          } else {
+            logger.info("No change to denyDLC count")
+            sender() ! ParameterInRange(fieldName)
+          }
         case _=>
           logger.warn(s"Nothing to handle check for field $fieldName")
           sender() ! ParameterInRange(fieldName)

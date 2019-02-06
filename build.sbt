@@ -30,7 +30,8 @@ libraryDependencies ++= Seq( jdbc , ehcache , ws , specs2 % Test , guice )
 
 val akkaVersion = "2.5.17"
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" %% "akka-testkit" % akkaVersion
+  "com.typesafe.akka" %% "akka-testkit" % akkaVersion,
+  "com.risksense" %% "ipaddr" % "1.0.2"
 )
 
 val elastic4sVersion = "6.0.4"
