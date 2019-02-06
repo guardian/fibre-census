@@ -1,5 +1,6 @@
 package models
 
+import scala.annotation.switch
 import scala.xml.NodeSeq
 
 /*
@@ -18,7 +19,7 @@ import scala.xml.NodeSeq
           }
  */
 object DriverInfo extends ((String, String, String, String, String, String,String, Boolean, Boolean, String)=>DriverInfo){
-  def stringToBool(str:String):Boolean = str.toLowerCase() match {
+  def stringToBool(str:String):Boolean = (str.toLowerCase(): @switch) match {
     case "yes"=>true
     case "true"=>true
     case "1"=>true

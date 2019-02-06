@@ -47,6 +47,9 @@ class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTim
   implicit val ec:ExecutionContext = system.dispatcher
   implicit val timeout:akka.util.Timeout = 60.seconds
 
+  //this is over-ridden in testing to make it easier to spy on internal messages
+  protected val ownRef = self
+
   override def receive: Receive = {
     /**
       * dispatched to check a string field
@@ -66,7 +69,7 @@ class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTim
         case "denyDlcVolumes"=>
           //placeholder, do something with deny DLC volumes check here
           sender() ! ParameterInRange(fieldName)
-        case other=>
+        case _=>
           logger.warn(s"Nothing to handle check for field $fieldName")
           sender() ! ParameterInRange(fieldName)
       }
@@ -81,7 +84,7 @@ class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTim
         sender() ! ParameterAlert(fieldName, "Information has disappeared")
       } else if(diff.oldValue.isDefined && diff.newValue.isDefined){
         //if we have two values, then the check is the same as for a mandatory string list
-        self.tell(CheckParameterStringList(fieldName, new DiffPair(diff.newValue.get, diff.oldValue.get)), sender())
+        ownRef.tell(CheckParameterStringList(fieldName, new DiffPair(diff.newValue.get, diff.oldValue.get)), sender())
       }
 
     /**
@@ -136,7 +139,7 @@ class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTim
     case HostInfoUpdated(newHostInfo, maybeOldHostInfo)=>
       logger.info(s"Received new host information: $newHostInfo")
       maybeOldHostInfo match {
-        case None=>self ! NewHostDiscovered(newHostInfo)
+        case None=>ownRef ! NewHostDiscovered(newHostInfo)
         case Some(oldHostInfo)=>
           val diffs = HostInfoDiff(newHostInfo, oldHostInfo)
           logger.debug(s"Received information $diffs")
@@ -155,7 +158,7 @@ class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTim
           if(msgSeq.isEmpty){
             logger.info("No changes to worry about")
           } else {
-            val alertsFuture = Future.sequence(msgSeq.map(msg=>self ? msg))
+            val alertsFuture = Future.sequence(msgSeq.map(msg=>ownRef ? msg))
               .map(_.map(_.asInstanceOf[AAMsg])
                   .collect({
                     case a:ParameterAlert=>a
@@ -167,7 +170,7 @@ class AlertsActor @Inject() (system:ActorSystem) extends Actor with ZonedDateTim
               case Success(alerts)=>
                 if(alerts.nonEmpty){
                   logger.info(s"Found alerts for ${newHostInfo.hostName}: $alerts, triggering")
-                  self ! TriggerAlerts(alerts)
+                  ownRef ! TriggerAlerts(alerts)
                 } else {
                   logger.info(s"No alerts found for ${newHostInfo.hostName}")
                 }

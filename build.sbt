@@ -28,7 +28,7 @@ scalaVersion := "2.12.2"
 
 libraryDependencies ++= Seq( jdbc , ehcache , ws , specs2 % Test , guice )
 
-val akkaVersion = "2.5.18"
+val akkaVersion = "2.5.17"
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-testkit" % akkaVersion
 )
