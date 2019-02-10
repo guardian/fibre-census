@@ -8,7 +8,6 @@ import io.circe.generic.auto._
 import javax.inject.Inject
 import models._
 import play.api.{Configuration, Logger}
-
 import scala.annotation.switch
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
