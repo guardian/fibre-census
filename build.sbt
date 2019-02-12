@@ -41,6 +41,7 @@ libraryDependencies ++= Seq (
   "com.sksamuel.elastic4s" %% "elastic4s-testkit" % elastic4sVersion % "test",
   "com.sksamuel.elastic4s" %% "elastic4s-embedded" % elastic4sVersion % "test",
 )
+
 val circeVersion = "0.9.3"
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core" % circeVersion,
@@ -49,6 +50,9 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-java8" % circeVersion,
   "com.dripower" %% "play-circe" % "2610.0"
 )
+
+// https://mvnrepository.com/artifact/javax.mail/mail
+libraryDependencies += "javax.mail" % "mail" % "1.5.0-b01"
 
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
 
