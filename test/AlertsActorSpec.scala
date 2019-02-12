@@ -6,19 +6,26 @@ import org.specs2.mutable.Specification
 import io.circe.generic.auto._
 import akka.pattern.ask
 import akka.testkit.TestProbe
+import com.sksamuel.elastic4s.http.{RequestFailure, RequestSuccess}
+import com.sksamuel.elastic4s.http.update.UpdateResponse
+import helpers.AlertHistoryDAO
+import org.specs2.mock.Mockito
 import play.api.Configuration
 import services.AlertsActor
 
-import scala.concurrent.Await
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class AlertsActorSpec extends Specification  {
+class AlertsActorSpec extends Specification with Mockito {
   sequential
   implicit val timeout:akka.util.Timeout = 10.seconds
   val blankConfig = Configuration.empty
   
   import services.AlertsActor._
 
+  val mockDAO = mock[AlertHistoryDAO]
+  
   "AlertsActor!CheckParameter[FCInfo]" should {
     "reply with ParameterInRange if the diffs are the same" in new AkkaTestkitSpecs2Support {
       val mockFcInfo = FCInfo(
@@ -55,7 +62,7 @@ class AlertsActorSpec extends Specification  {
       )
 
       val d = DiffPair(Some(mockFcInfoAfter), Some(mockFcInfo))
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig)))
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO)))
 
       val result = Await.result(toTest ? CheckParameterFcInfo("test-field",d.get), 10.seconds)
       result.asInstanceOf[AnyRef] must beAnInstanceOf[ParameterInRange]
@@ -89,7 +96,7 @@ class AlertsActorSpec extends Specification  {
       )
 
       val d = DiffPair(Some(mockFcInfoAfter), Some(mockFcInfo))
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig)))
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO)))
 
       val result = Await.result(toTest ? CheckParameterFcInfo("test-field",d.get), 10.seconds)
       result.asInstanceOf[AnyRef] must beAnInstanceOf[ParameterAlert]
@@ -101,7 +108,7 @@ class AlertsActorSpec extends Specification  {
       val d = DiffPair(List("169.254.0.3"),List("169.254.0.3","192.168.1.3"))
       val config = Configuration.from(Map("san.networkCIDR"->"192.168.1.0/24"))
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, config)))
+      val toTest = system.actorOf(Props(new AlertsActor(system, config, mockDAO)))
 
       val result = Await.result(toTest ? CheckParameterStringList("ipAddresses",d.get), 10.seconds)
       result.asInstanceOf[AnyRef] must beAnInstanceOf[ParameterAlert]
@@ -111,7 +118,7 @@ class AlertsActorSpec extends Specification  {
       val d = DiffPair(List("169.254.0.3","192.168.1.5"),List("169.254.0.3","192.168.1.3"))
       val config = Configuration.from(Map("san.networkCIDR"->"192.168.1.0/24"))
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, config)))
+      val toTest = system.actorOf(Props(new AlertsActor(system, config, mockDAO)))
 
       val result = Await.result(toTest ? CheckParameterStringList("ipAddresses",d.get), 10.seconds)
       result.asInstanceOf[AnyRef] must beAnInstanceOf[ParameterInRange]
@@ -122,7 +129,7 @@ class AlertsActorSpec extends Specification  {
     "alert if the number of denied volumes drops" in  new AkkaTestkitSpecs2Support {
       val d = DiffPair(List("vol1"),List("vol1","vol2"))
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig)))
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO)))
 
       val result = Await.result(toTest ? CheckParameterStringList("denyDlcVolumes",d.get), 10.seconds)
       result.asInstanceOf[AnyRef] must beAnInstanceOf[ParameterAlert]
@@ -131,7 +138,7 @@ class AlertsActorSpec extends Specification  {
     "not alert if the number of denied volumes increases" in  new AkkaTestkitSpecs2Support {
       val d = DiffPair(List("vol1","vol2"),List("vol1"))
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig)))
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO)))
 
       val result = Await.result(toTest ? CheckParameterStringList("denyDlcVolumes",d.get), 10.seconds)
       result.asInstanceOf[AnyRef] must beAnInstanceOf[ParameterInRange]
@@ -153,7 +160,7 @@ class AlertsActorSpec extends Specification  {
       )
       val testProbe = TestProbe()
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig){
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO){
         override protected val ownRef = testProbe.ref
       }))
 
@@ -189,7 +196,7 @@ class AlertsActorSpec extends Specification  {
 
       val testProbe = TestProbe()
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig){
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO){
         override protected val ownRef = testProbe.ref
       }))
 
@@ -225,7 +232,7 @@ class AlertsActorSpec extends Specification  {
 
       val testProbe = TestProbe()
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig){
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO){
         override protected val ownRef = testProbe.ref
       }))
 
@@ -261,7 +268,7 @@ class AlertsActorSpec extends Specification  {
 
       val testProbe = TestProbe()
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig){
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO){
         override protected val ownRef = testProbe.ref
       }))
 
@@ -301,7 +308,7 @@ class AlertsActorSpec extends Specification  {
 
       val testProbe = TestProbe()
 
-      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig){
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, mockDAO){
         override protected val ownRef = testProbe.ref
       }))
 
@@ -311,7 +318,75 @@ class AlertsActorSpec extends Specification  {
       testProbe.reply(ParameterInRange("computerName"))
       testProbe.expectMsg(5.seconds, CheckParameterStringList("ipAddresses",DiffPair(List("new_ip_address"),List()).get))
       testProbe.reply(ParameterAlert("ipAddresses","test message"))
-      testProbe.expectMsg(5.seconds, TriggerAlerts(Seq(ParameterAlert("ipAddresses","test message"))))
+      testProbe.expectMsg(5.seconds, TriggerAlerts("fake_host", Seq(ParameterAlert("ipAddresses","test message"))))
+    }
+  }
+
+  "AlertsActor!TriggerAlerts" should {
+    "call alertHistoryDAO.addAlertNoDupe for each alert given" in new AkkaTestkitSpecs2Support {
+      val testProbe = TestProbe()
+      val testDAO = mock[AlertHistoryDAO]
+      val mockedResponse = mock[RequestSuccess[UpdateResponse]]
+      testDAO.addAlertNoDupe(any, any, any, any, any) returns Future(Right(mockedResponse))
+
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, testDAO){
+        override protected val ownRef = testProbe.ref
+      }))
+
+      val testMsg = TriggerAlerts("fake_host", Seq(
+        ParameterAlert("ipAddresses", "wrong ip address"),
+        ParameterAlert("fibrechannel", "fibrecannel broke")
+      ))
+
+      val response = Await.result(toTest ? testMsg, 10.seconds)
+
+      there was one(testDAO).addAlertNoDupe("fake_host","ipAddresses","wrong ip address", false, None)
+      there was one(testDAO).addAlertNoDupe("fake_host","fibrechannel","fibrecannel broke", false, None)
+      response mustEqual akka.actor.Status.Success
+    }
+
+    "not error on a 409 conflict" in new AkkaTestkitSpecs2Support {
+      val testProbe = TestProbe()
+      val testDAO = mock[AlertHistoryDAO]
+      val mockedResponse =RequestFailure(409,None,Map(),null)
+      testDAO.addAlertNoDupe(any, any, any, any, any) returns Future(Left(mockedResponse))
+
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, testDAO){
+        override protected val ownRef = testProbe.ref
+      }))
+
+      val testMsg = TriggerAlerts("fake_host", Seq(
+        ParameterAlert("ipAddresses", "wrong ip address"),
+        ParameterAlert("fibrechannel", "fibrecannel broke")
+      ))
+
+      val response = Await.result(toTest ? testMsg, 10.seconds)
+
+      there was one(testDAO).addAlertNoDupe("fake_host","ipAddresses","wrong ip address", false, None)
+      there was one(testDAO).addAlertNoDupe("fake_host","fibrechannel","fibrecannel broke", false, None)
+      response mustEqual akka.actor.Status.Success
+    }
+
+    "report back any non-409 error" in new AkkaTestkitSpecs2Support {
+      val testProbe = TestProbe()
+      val testDAO = mock[AlertHistoryDAO]
+      val mockedResponse =RequestFailure(500,None,Map(),null)
+      testDAO.addAlertNoDupe(any, any, any, any, any) returns Future(Left(mockedResponse))
+
+      val toTest = system.actorOf(Props(new AlertsActor(system, blankConfig, testDAO)))
+
+      val testMsg = TriggerAlerts("fake_host", Seq(
+        ParameterAlert("ipAddresses", "wrong ip address"),
+        ParameterAlert("fibrechannel", "fibrecannel broke")
+      ))
+
+
+      toTest.tell(testMsg, testProbe.ref)
+      testProbe.expectMsgAllClassOf(classOf[akka.actor.Status.Failure])
+
+      there was one(testDAO).addAlertNoDupe("fake_host","ipAddresses","wrong ip address", false, None)
+      there was one(testDAO).addAlertNoDupe("fake_host","fibrechannel","fibrecannel broke", false, None)
+
     }
   }
 }

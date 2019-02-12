@@ -2,7 +2,7 @@ package services
 
 import akka.actor.{Actor, ActorSystem}
 import com.risksense.ipaddr.{IpAddress, IpNetwork}
-import helpers.ZonedDateTimeEncoder
+import helpers.{AlertHistoryDAO, ZonedDateTimeEncoder}
 import io.circe.{Decoder, Encoder}
 import io.circe.generic.auto._
 import javax.inject.Inject
@@ -30,7 +30,7 @@ object AlertsActor {
   case class CheckParameterStringList(fieldName:String, diff:DiffPair[Seq[String]])
   case class CheckParameterOptStringList(fieldName:String, diff:DiffPair[Option[Seq[String]]])
   case class CheckParameterOptDriverInfoList(fieldName:String, diff:DiffPair[Option[Seq[DriverInfo]]])
-  case class TriggerAlerts(alerts:Seq[ParameterAlert])
+  case class TriggerAlerts(hostname:String, alerts:Seq[ParameterAlert])
 
   /*
   reply messages sent back
@@ -39,7 +39,7 @@ object AlertsActor {
   case class ParameterAlert(fieldName:String, alertDesc:String) extends AAMsg
 }
 
-class AlertsActor @Inject() (system:ActorSystem, config:Configuration) extends Actor with ZonedDateTimeEncoder {
+class AlertsActor @Inject() (system:ActorSystem, config:Configuration, alertHistoryDAO:AlertHistoryDAO) extends Actor with ZonedDateTimeEncoder {
   private val logger = Logger(getClass)
   import AlertsActor._
   import akka.pattern.ask
@@ -51,6 +51,42 @@ class AlertsActor @Inject() (system:ActorSystem, config:Configuration) extends A
   protected val ownRef = self
 
   override def receive: Receive = {
+    /**
+      * dispatched if we have alerts to trigger.  Writes them to the database
+      */
+    case TriggerAlerts(hostname:String, alerts:Seq[ParameterAlert]) =>
+      val originalSender = sender()
+      //TODO: add sending to any dispatch mechanisms (e.g. SMTP, PagerDuty etc - see https://index.scala-lang.org/kaliber-scala/scala-mailer/scala-mailer-core/)
+      val writeSeq = alerts.map(alt=>{
+        alertHistoryDAO.addAlertNoDupe(hostname, alt.fieldName, alt.alertDesc, false, None)
+          .map({
+            case Left(failure)=>
+              if(failure.status==409) { //filter out conflict response
+                logger.info(s"Alert is already open for ${alt.fieldName}: ${alt.alertDesc} on $hostname")
+                Right(None)
+              } else {
+                logger.error(s"Could not write alert to database: ${failure.toString}")
+                Left(failure)
+              }
+            case Right(succ)=>Right(Some(succ))
+          })
+      })
+
+      Future.sequence(writeSeq).onComplete({
+        case Success(results)=>
+          val errored = results.collect({case Left(err)=>err})
+          val noterrored = results.collect({case Right(result)=>result})
+          logger.info(s"Triggered ${noterrored.length} alerts with $errored errors")
+          if(errored.nonEmpty){
+            originalSender ! akka.actor.Status.Failure(new RuntimeException(s"${errored.length} alerts did not update"))
+          } else {
+            originalSender ! akka.actor.Status.Success
+          }
+        case Failure(err)=>
+          logger.error("Could not record triggered alerts: ", err)
+          originalSender ! akka.actor.Status.Failure(err)
+      })
+
     /**
       * dispatched to check a string field
       */
@@ -196,7 +232,7 @@ class AlertsActor @Inject() (system:ActorSystem, config:Configuration) extends A
               case Success(alerts)=>
                 if(alerts.nonEmpty){
                   logger.info(s"Found alerts for ${newHostInfo.hostName}: $alerts, triggering")
-                  ownRef ! TriggerAlerts(alerts)
+                  ownRef ! TriggerAlerts(newHostInfo.hostName, alerts)
                 } else {
                   logger.info(s"No alerts found for ${newHostInfo.hostName}")
                 }

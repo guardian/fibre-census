@@ -7,7 +7,7 @@ import com.sksamuel.elastic4s.http.{RequestFailure, RequestSuccess}
 import com.sksamuel.elastic4s.http.update.UpdateResponse
 import javax.inject.Inject
 import models.AlertHistoryEntry
-import play.api.Configuration
+import play.api.{Configuration, Logger}
 import io.circe.generic.auto._
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -16,8 +16,9 @@ import scala.concurrent.Future
 class AlertHistoryDAO @Inject() (config:Configuration, esClientMgr:ESClientManager) extends ZonedDateTimeEncoder with UUIDEncoder {
   import com.sksamuel.elastic4s.http.ElasticDsl._
   import com.sksamuel.elastic4s.circe._
+  private val logger = Logger(getClass)
 
-  protected val indexName = config.get[String]("elasticsearch.indexName")
+  protected val indexName = config.get[String]("elasticsearch.alertsIndex")
   val client = esClientMgr.getClient()
 
   /**
@@ -49,6 +50,22 @@ class AlertHistoryDAO @Inject() (config:Configuration, esClientMgr:ESClientManag
         must(finalQS)
       }
     }).map(_.map(_.result))
+  }
+
+  /**
+    * saves the given entry to the database. Over-writes anything with the given ID.
+    * @param entry entry to save
+    * @return
+    */
+  def put(entry:AlertHistoryEntry) =
+    client.execute({
+      update(entry.alertId.toString).in(indexName).docAsUpsert(entry)
+    })
+
+  def alertForId(id:UUID) = {
+    client.execute({
+      get(id.toString).from(indexName)
+    }).map(_.map(_.result.to[AlertHistoryEntry]))
   }
 
   /**
@@ -99,6 +116,55 @@ class AlertHistoryDAO @Inject() (config:Configuration, esClientMgr:ESClientManag
         }
       case Left(err)=>
         Future(Left(err))
+    })
+  }
+
+  /**
+    * marks the given ID as closed
+    * @param alertId alert ID
+    * @param closeTime optional, override closing time. If None or not set, then use current time
+    * @return a Future, containing either a failure or an UpdateResponse success
+    */
+  def closeById(alertId:UUID, closeTime:Option[ZonedDateTime]):Future[Either[RequestFailure, RequestSuccess[UpdateResponse]]] = {
+    alertForId(alertId).flatMap({
+      case Right(entry)=>
+        val actualCloseTime = closeTime match {
+          case None=>ZonedDateTime.now()
+          case Some(time)=>time
+        }
+        val updatedEntry = entry.copy(closedAt = Some(actualCloseTime))
+        put(updatedEntry)
+      case Left(err)=>
+        Future(Left(err))
+    })
+  }
+
+  def closeMatching(hostname:String, subsys:String, closeTime:Option[ZonedDateTime]) = {
+    findAlerts(hostname, subsys, isOpen = Some(true)).flatMap({
+      case Left(err)=>Future(Left(err))
+      case Right(alertsList)=>
+        val updateFutures = alertsList.hits.hits.map(hit=>{
+          val alt = hit.to[AlertHistoryEntry]
+          val actualCloseTime = closeTime match {
+            case Some(time)=>time
+            case None=>ZonedDateTime.now()
+          }
+          val updated = alt.copy(closedAt=Some(actualCloseTime))
+          put(updated)
+        }).toSeq
+
+        val updates = Future.sequence(updateFutures)
+        updates.map(results=>{
+          val failures = results.collect({case Left(err)=>err})
+          if(failures.nonEmpty){
+            logger.error("Could not close all alerts: ")
+            failures.foreach(err=>logger.error(err.toString))
+            Left(failures.head)
+          } else {
+            logger.info(s"Closed ${results.length} open alerts")
+            Right(s"Closed ${results.length} open alerts")
+          }
+        })
     })
   }
 }
