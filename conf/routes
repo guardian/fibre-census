@@ -15,3 +15,6 @@ POST    /api/hostinfo                   @controllers.HostInfoController.addRecor
 
 POST    /api/logins             @controllers.LoginHistoryController.updateLogins
 GET     /api/logins/:hostname   @controllers.LoginHistoryController.loginsFor(hostname,limit:Option[Int])
+
+GET     /api/alerts             @controllers.AlertsController.allAlerts(limit:Option[Int])
+PUT     /api/alert/:alertId/close @controllers.AlertsController.closeById(alertId)

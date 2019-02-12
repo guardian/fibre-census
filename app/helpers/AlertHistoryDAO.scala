@@ -22,6 +22,15 @@ class AlertHistoryDAO @Inject() (config:Configuration, esClientMgr:ESClientManag
   val client = esClientMgr.getClient()
 
   /**
+    * returns all of the records, with most recently opened first, up to a given limit
+    * @param lim Integer, maximum number of records to return
+    * @return a Future with either a tuple of the records and total record count or an error
+    */
+  def getAll(lim:Int) = client.execute {
+    search(indexName) sortByFieldDesc "openedAt" limit lim
+  }.map(_.map(response=>(response.result.hits.hits.map(_.to[AlertHistoryEntry]).toSeq, response.result.hits.total)))
+
+  /**
     * get alerts by hostname and subsystem identifiers
     * @param hostname hostname to search for
     * @param subsys subsystem identifier to search for
