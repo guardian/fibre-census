@@ -198,6 +198,36 @@ sub printkv {
   }
 }
 
+sub checkXsand {
+  my $xsandContent = `pgrep xsand`;
+  if ($xsandContent eq '') {
+  	return 'Not running';
+  } else {
+    return 'Running';
+  }
+}
+
+sub checkMounts {
+  my $mountsContent = `mount | grep acfs`;
+  my $mountInt=1;
+  my $data = {};
+  foreach(split(/\n/, $mountsContent)){
+	my @fields = split / /, $_;
+	my @fieldsParts = split /\//, $fields[2];
+	print "$fieldsParts[-1]\n";
+    $data->{"$mountInt"}->{"mountPath"}="$fields[2]";
+    $data->{"$mountInt"}->{"name"}="$fieldsParts[-1]";
+    $mountInt = $mountInt + 1;
+  }
+  my $arrayOutput=[];
+  foreach(keys %$data){
+    my $updatedHash = $data->{$_};
+    $updatedHash->{"number"} = $_;
+    push @$arrayOutput, $updatedHash;
+  }
+  return $arrayOutput;
+}
+
 print "Run starting on $hostname at " . DateTime->now() . " UTC\n";
 print "--------------------------------------------\n";
 print "Collecting computer name...\n";
@@ -214,6 +244,10 @@ print "Collecting DLC status...\n";
 my $denyDlc = checkDenyDlc;
 print "Collecting fibre drivers info...\n";
 my $driverInfo = getDriverInfo;
+print "Collecting xsand status...\n";
+my $xsandStatus = checkXsand;
+print "Collecting mount info...\n";
+my $mountInfo = checkMounts;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -229,6 +263,10 @@ if($format eq "text"){
     print Dumper($driverInfo);
     print "DenyDLC run:\n";
     print Dumper($denyDlc);
+    print "Xsand status:\n";
+    print Dumper($xsandStatus);
+    print "Mounts:\n";
+    print Dumper($mountInfo);
 } elsif($format eq "xml"){
   my $data = {
     "hostname"=>$hostname,
@@ -238,7 +276,9 @@ if($format eq "text"){
       "model"=>$hwInfo->{"model"},
       "hw_uuid"=>$hwInfo->{"hw_uuid"},
       "denyDlc"=>{"volume"=>$denyDlc},
-      "driverInfo"=>{"driver"=>$driverInfo}
+      "driverInfo"=>{"driver"=>$driverInfo},
+      "XsandStatus"=>{"status"=>$xsandStatus},
+      "sanVolumesVisible"=>{"mount"=>$mountInfo},
   };
 
     my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName","denyDlc"]);
