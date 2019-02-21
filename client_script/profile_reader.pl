@@ -201,7 +201,7 @@ sub printkv {
 sub checkXsand {
   my $xsandContent = `pgrep xsand`;
   if ($xsandContent eq '') {
-  	return 'Not running';
+    return 'Not running';
   } else {
     return 'Running';
   }
