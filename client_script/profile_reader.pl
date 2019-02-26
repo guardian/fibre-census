@@ -7,12 +7,14 @@ use LWP::UserAgent;
 use Getopt::Long;
 use XML::Parser;
 use DateTime;
+use Try::Tiny;
+use File::Slurp;
 
 my $format="text";
 my $useXml;
 my $outputUri;
-GetOptions("xml"=>\$useXml, "out=s"=>\$outputUri);
 
+GetOptions("xml"=>\$useXml, "out=s"=>\$outputUri);
 
 $format="xml" if($useXml);
 
@@ -214,10 +216,86 @@ sub checkMounts {
   foreach(split(/\n/, $mountsContent)){
 	my @fields = split / /, $_;
 	my @fieldsParts = split /\//, $fields[2];
-	print "$fieldsParts[-1]\n";
     $data->{"$mountInt"}->{"mountPath"}="$fields[2]";
     $data->{"$mountInt"}->{"name"}="$fieldsParts[-1]";
     $mountInt = $mountInt + 1;
+  }
+  my $arrayOutput=[];
+  foreach(keys %$data){
+    my $updatedHash = $data->{$_};
+    $updatedHash->{"number"} = $_;
+    push @$arrayOutput, $updatedHash;
+  }
+  return $arrayOutput;
+}
+
+sub pingMetaDataControllers {
+  my $xsanNameServersConfigFile = read_file('/Library/Preferences/Xsan/fsnameservers');
+  my $data = {};
+  my $pingInt=1;
+  my $percentagePacketLoss = 0;
+  foreach(split(/\n/, $xsanNameServersConfigFile)){
+    my $pingContent = `ping -c 1 $_`;
+    my @pingContentArray = split /\n/, $pingContent;
+    my $pingStatus;
+    my $packetLoss;
+    my $pingResult;
+	no warnings 'uninitialized';
+	no warnings 'substr';
+	try {
+	  $pingResult = substr $pingContentArray[4], 23, 1;
+	};
+	use warnings 'uninitialized';
+	use warnings 'substr';
+	if (defined $pingResult) {
+      $pingStatus = 'true';
+      $packetLoss = '0';
+      print "Ping sucessful\n";
+      print "IP: $_\n";
+      print "Ping Status: $pingStatus\n";
+      print "Packet Loss: $packetLoss\n";
+    } else {
+      $pingStatus = 'false';
+      print "Ping failed\n";
+      print "IP: $_\n";
+      print "Ping Status: $pingStatus\n";
+      print "Attempting ten more pings...\n";
+      my $pingCount = 1;
+      my $pingResults = 0;
+      while ($pingCount < 11) {
+        print "pinging\n";
+        my $pingContentTwo = `ping -c 1 $_`;
+        my @pingContentArrayTwo = split /\n/, $pingContentTwo;
+        my $pingResultTwo;
+        no warnings 'uninitialized';
+        no warnings 'substr';
+        try {
+          $pingResultTwo = substr $pingContentArrayTwo[4], 23, 1;
+        };
+        use warnings 'uninitialized';
+        use warnings 'substr';
+        if (defined $pingResultTwo) {
+          $pingStatus = 'true';
+          print "Ping sucessful\n";
+          print "IP: $_\n";
+        } else {
+          $pingResults++;
+          print "Ping failed\n";
+          print "IP: $_\n";
+        }
+        $pingCount++;
+      }
+      $percentagePacketLoss = $pingResults * 10;
+      print "Packet Loss: $percentagePacketLoss%\n";
+    }
+    my $percentagePacketLossForXML = 0;
+    if ($percentagePacketLoss != 0) {
+      $percentagePacketLossForXML = $percentagePacketLoss;
+    }
+    $data->{"$pingInt"}->{"ip"}="$_";
+    $data->{"$pingInt"}->{"ping"}="$pingStatus";
+    $data->{"$pingInt"}->{"packetloss"}="$percentagePacketLossForXML";
+    $pingInt = $pingInt + 1;
   }
   my $arrayOutput=[];
   foreach(keys %$data){
@@ -248,6 +326,8 @@ print "Collecting xsand status...\n";
 my $xsandStatus = checkXsand;
 print "Collecting mount info...\n";
 my $mountInfo = checkMounts;
+print "Collecting ping info...\n";
+my $pingInfo = pingMetaDataControllers;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -267,6 +347,8 @@ if($format eq "text"){
     print Dumper($xsandStatus);
     print "Mounts:\n";
     print Dumper($mountInfo);
+    print "Ping:\n";
+    print Dumper($pingInfo);
 } elsif($format eq "xml"){
   my $data = {
     "hostname"=>$hostname,
@@ -279,6 +361,7 @@ if($format eq "text"){
       "driverInfo"=>{"driver"=>$driverInfo},
       "XsandStatus"=>{"status"=>$xsandStatus},
       "sanVolumesVisible"=>{"mount"=>$mountInfo},
+      "mdcConnectivity"=>{"mdc"=>$pingInfo},
   };
 
     my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName","denyDlc"]);
