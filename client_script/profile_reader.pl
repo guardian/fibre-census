@@ -15,6 +15,7 @@ my $useXml;
 my $outputUri;
 GetOptions("xml"=>\$useXml, "out=s"=>\$outputUri);
 
+
 $format="xml" if($useXml);
 
 my $hostname = `hostname`;
