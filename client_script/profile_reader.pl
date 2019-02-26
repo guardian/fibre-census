@@ -13,7 +13,6 @@ use File::Slurp;
 my $format="text";
 my $useXml;
 my $outputUri;
-
 GetOptions("xml"=>\$useXml, "out=s"=>\$outputUri);
 
 $format="xml" if($useXml);
