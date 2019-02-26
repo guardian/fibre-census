@@ -250,20 +250,11 @@ sub pingMetaDataControllers {
 	if (defined $pingResult) {
       $pingStatus = 'true';
       $packetLoss = '0';
-      print "Ping sucessful\n";
-      print "IP: $_\n";
-      print "Ping Status: $pingStatus\n";
-      print "Packet Loss: $packetLoss\n";
     } else {
       $pingStatus = 'false';
-      print "Ping failed\n";
-      print "IP: $_\n";
-      print "Ping Status: $pingStatus\n";
-      print "Attempting ten more pings...\n";
       my $pingCount = 1;
       my $pingResults = 0;
       while ($pingCount < 11) {
-        print "pinging\n";
         my $pingContentTwo = `ping -c 1 $_`;
         my @pingContentArrayTwo = split /\n/, $pingContentTwo;
         my $pingResultTwo;
@@ -276,17 +267,12 @@ sub pingMetaDataControllers {
         use warnings 'substr';
         if (defined $pingResultTwo) {
           $pingStatus = 'true';
-          print "Ping sucessful\n";
-          print "IP: $_\n";
         } else {
           $pingResults++;
-          print "Ping failed\n";
-          print "IP: $_\n";
         }
         $pingCount++;
       }
       $percentagePacketLoss = $pingResults * 10;
-      print "Packet Loss: $percentagePacketLoss%\n";
     }
     my $percentagePacketLossForXML = 0;
     if ($percentagePacketLoss != 0) {
