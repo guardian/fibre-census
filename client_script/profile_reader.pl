@@ -214,7 +214,7 @@ sub checkMounts {
   my $mountInt=1;
   my $data = {};
   foreach(split(/\n/, $mountsContent)){
-	my @fields = split / /, $_;
+    my @fields = split / /, $_;
 	my @fieldsParts = split /\//, $fields[2];
     $data->{"$mountInt"}->{"mountPath"}="$fields[2]";
     $data->{"$mountInt"}->{"name"}="$fieldsParts[-1]";
