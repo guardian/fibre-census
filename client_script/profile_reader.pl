@@ -229,51 +229,50 @@ sub checkMounts {
   return $arrayOutput;
 }
 
+sub doPing {
+    my ($serverIp) = @_;
+
+    my $pingContent = `ping -c 1 $serverIp`;
+    my @pingContentArray = split /\n/, $pingContent;
+    my $pingResult;
+    no warnings 'uninitialized';
+    no warnings 'substr';
+    try {
+        $pingResult = substr $pingContentArray[4], 23, 1;
+    };
+    use warnings 'uninitialized';
+    use warnings 'substr';
+
+    return $pingResult;
+}
+
 sub pingMetaDataControllers {
   my $xsanNameServersConfigFile = read_file('/Library/Preferences/Xsan/fsnameservers');
   my $data = {};
   my $pingInt=1;
   my $percentagePacketLoss = 0;
   foreach(split(/\n/, $xsanNameServersConfigFile)){
-    my $pingContent = `ping -c 1 $_`;
-    my @pingContentArray = split /\n/, $pingContent;
-    my $pingStatus;
-    my $packetLoss;
-    my $pingResult;
-	no warnings 'uninitialized';
-	no warnings 'substr';
-	try {
-	  $pingResult = substr $pingContentArray[4], 23, 1;
-	};
-	use warnings 'uninitialized';
-	use warnings 'substr';
-	if (defined $pingResult) {
-      $pingStatus = 'true';
-      $packetLoss = '0';
-    } else {
-      $pingStatus = 'false';
-      my $pingCount = 1;
-      my $pingResults = 0;
-      while ($pingCount < 11) {
-        my $pingContentTwo = `ping -c 1 $_`;
-        my @pingContentArrayTwo = split /\n/, $pingContentTwo;
-        my $pingResultTwo;
-        no warnings 'uninitialized';
-        no warnings 'substr';
-        try {
-          $pingResultTwo = substr $pingContentArrayTwo[4], 23, 1;
-        };
-        use warnings 'uninitialized';
-        use warnings 'substr';
-        if (defined $pingResultTwo) {
-          $pingStatus = 'true';
-        } else {
-          $pingResults++;
+      my $pingStatus;
+      my $packetLoss;
+      my $pingResult = doPing($_);
+      if (defined $pingResult) {
+        $pingStatus = 'true';
+        $packetLoss = '0';
+      } else {
+        $pingStatus = 'false';
+        my $pingCount = 1;
+        my $pingResults = 0;
+        for($pingCount=0;$pingCount<=10;++$pingCount) {
+          my $pingResultTwo = doPing($_);
+          if (defined $pingResultTwo) {
+            $pingStatus = 'true';
+          } else {
+            $pingResults++;
+          }
+          $pingCount++;
         }
-        $pingCount++;
+        $percentagePacketLoss = $pingResults * 10;
       }
-      $percentagePacketLoss = $pingResults * 10;
-    }
     my $percentagePacketLossForXML = 0;
     if ($percentagePacketLoss != 0) {
       $percentagePacketLossForXML = $percentagePacketLoss;
