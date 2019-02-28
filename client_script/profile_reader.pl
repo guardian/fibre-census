@@ -260,16 +260,14 @@ sub pingMetaDataControllers {
         $packetLoss = '0';
       } else {
         $pingStatus = 'false';
-        my $pingCount = 1;
         my $pingResults = 0;
-        for($pingCount=0;$pingCount<=10;++$pingCount) {
+        for($pingCount=1;$pingCount<=10;++$pingCount) {
           my $pingResultTwo = doPing($_);
           if (defined $pingResultTwo) {
             $pingStatus = 'true';
           } else {
             $pingResults++;
           }
-          $pingCount++;
         }
         $percentagePacketLoss = $pingResults * 10;
       }
