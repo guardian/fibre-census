@@ -7,6 +7,8 @@ use LWP::UserAgent;
 use Getopt::Long;
 use XML::Parser;
 use DateTime;
+use Try::Tiny;
+use File::Slurp;
 
 my $format="text";
 my $useXml;
@@ -198,6 +200,95 @@ sub printkv {
   }
 }
 
+sub checkXsand {
+  my $xsandContent = `pgrep xsand`;
+  if ($xsandContent eq '') {
+    return 'Not running';
+  } else {
+    return 'Running';
+  }
+}
+
+sub checkMounts {
+  my $mountsContent = `mount | grep acfs`;
+  my $mountInt=1;
+  my $data = {};
+  foreach(split(/\n/, $mountsContent)){
+    my @fields = split / /, $_;
+	my @fieldsParts = split /\//, $fields[2];
+    $data->{"$mountInt"}->{"mountPath"}="$fields[2]";
+    $data->{"$mountInt"}->{"name"}="$fieldsParts[-1]";
+    $mountInt = $mountInt + 1;
+  }
+  my $arrayOutput=[];
+  foreach(keys %$data){
+    my $updatedHash = $data->{$_};
+    $updatedHash->{"number"} = $_;
+    push @$arrayOutput, $updatedHash;
+  }
+  return $arrayOutput;
+}
+
+sub doPing {
+    my ($serverIp) = @_;
+
+    my $pingContent = `ping -c 1 $serverIp`;
+    my @pingContentArray = split /\n/, $pingContent;
+    my $pingResult;
+    no warnings 'uninitialized';
+    no warnings 'substr';
+    try {
+        $pingResult = substr $pingContentArray[4], 23, 1;
+    };
+    use warnings 'uninitialized';
+    use warnings 'substr';
+
+    return $pingResult;
+}
+
+sub pingMetaDataControllers {
+  my $xsanNameServersConfigFile = read_file('/Library/Preferences/Xsan/fsnameservers');
+  my $data = {};
+  my $pingInt=1;
+  my $percentagePacketLoss = 0;
+  foreach(split(/\n/, $xsanNameServersConfigFile)){
+      my $pingStatus;
+      my $packetLoss;
+      my $pingResult = doPing($_);
+      if (defined $pingResult) {
+        $pingStatus = 'true';
+        $packetLoss = '0';
+      } else {
+        $pingStatus = 'false';
+        my $pingResults = 0;
+        for($pingCount=1;$pingCount<=10;++$pingCount) {
+          my $pingResultTwo = doPing($_);
+          if (defined $pingResultTwo) {
+            $pingStatus = 'true';
+          } else {
+            $pingResults++;
+          }
+        }
+        $percentagePacketLoss = $pingResults * 10;
+      }
+    my $percentagePacketLossForXML = 0;
+    if ($percentagePacketLoss != 0) {
+      $percentagePacketLossForXML = $percentagePacketLoss;
+    }
+    $data->{"$pingInt"}->{"ip"}="$_";
+    $data->{"$pingInt"}->{"ping"}="$pingStatus";
+    $data->{"$pingInt"}->{"packetloss"}="$percentagePacketLossForXML";
+    $pingInt = $pingInt + 1;
+  }
+  my $arrayOutput=[];
+  foreach(keys %$data){
+    my $updatedHash = $data->{$_};
+    $updatedHash->{"number"} = $_;
+    push @$arrayOutput, $updatedHash;
+  }
+  return $arrayOutput;
+}
+
 print "Run starting on $hostname at " . DateTime->now() . " UTC\n";
 print "--------------------------------------------\n";
 print "Collecting computer name...\n";
@@ -214,6 +305,12 @@ print "Collecting DLC status...\n";
 my $denyDlc = checkDenyDlc;
 print "Collecting fibre drivers info...\n";
 my $driverInfo = getDriverInfo;
+print "Collecting xsand status...\n";
+my $xsandStatus = checkXsand;
+print "Collecting mount info...\n";
+my $mountInfo = checkMounts;
+print "Collecting ping info...\n";
+my $pingInfo = pingMetaDataControllers;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -229,6 +326,12 @@ if($format eq "text"){
     print Dumper($driverInfo);
     print "DenyDLC run:\n";
     print Dumper($denyDlc);
+    print "Xsand status:\n";
+    print Dumper($xsandStatus);
+    print "Mounts:\n";
+    print Dumper($mountInfo);
+    print "Ping:\n";
+    print Dumper($pingInfo);
 } elsif($format eq "xml"){
   my $data = {
     "hostname"=>$hostname,
@@ -238,7 +341,10 @@ if($format eq "text"){
       "model"=>$hwInfo->{"model"},
       "hw_uuid"=>$hwInfo->{"hw_uuid"},
       "denyDlc"=>{"volume"=>$denyDlc},
-      "driverInfo"=>{"driver"=>$driverInfo}
+      "driverInfo"=>{"driver"=>$driverInfo},
+      "XsandStatus"=>{"status"=>$xsandStatus},
+      "sanVolumesVisible"=>{"mount"=>$mountInfo},
+      "mdcConnectivity"=>{"mdc"=>$pingInfo},
   };
 
     my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName","denyDlc"]);
