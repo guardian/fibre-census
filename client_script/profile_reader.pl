@@ -9,6 +9,7 @@ use XML::Parser;
 use DateTime;
 use Try::Tiny;
 use File::Slurp;
+use Try::Tiny;
 
 my $format="text";
 my $useXml;
@@ -247,47 +248,55 @@ sub doPing {
 }
 
 sub pingMetaDataControllers {
-  my $xsanNameServersConfigFile = read_file('/Library/Preferences/Xsan/fsnameservers');
-  my $data = {};
-  my $pingInt=1;
-  my $percentagePacketLoss = 0;
-  foreach(split(/\n/, $xsanNameServersConfigFile)){
-      my $pingStatus;
-      my $packetLoss;
-      my $pingResult = doPing($_);
-      if (defined $pingResult) {
-        $pingStatus = 'true';
-        $packetLoss = '0';
-      } else {
-        $pingStatus = 'false';
-        my $pingResults = 0;
-        for($pingCount=1;$pingCount<=10;++$pingCount) {
-          my $pingResultTwo = doPing($_);
-          if (defined $pingResultTwo) {
-            $pingStatus = 'true';
-          } else {
-            $pingResults++;
-          }
+    try {
+        my $xsanNameServersConfigFile = read_file('/Library/Preferences/Xsan/fsnameservers');
+        my $data = {};
+        my $pingInt = 1;
+        my $percentagePacketLoss = 0;
+        foreach (split(/\n/, $xsanNameServersConfigFile)) {
+            my $pingStatus;
+            my $packetLoss;
+            my $pingResult = doPing($_);
+            if (defined $pingResult) {
+                $pingStatus = 'true';
+                $packetLoss = '0';
+            }
+            else {
+                $pingStatus = 'false';
+                my $pingResults = 0;
+                for ($pingCount = 1; $pingCount <= 10; ++$pingCount) {
+                    my $pingResultTwo = doPing($_);
+                    if (defined $pingResultTwo) {
+                        $pingStatus = 'true';
+                    }
+                    else {
+                        $pingResults++;
+                    }
+                }
+                $percentagePacketLoss = $pingResults * 10;
+            }
+            my $percentagePacketLossForXML = 0;
+            if ($percentagePacketLoss != 0) {
+                $percentagePacketLossForXML = $percentagePacketLoss;
+            }
+            $data->{"$pingInt"}->{"ip"} = "$_";
+            $data->{"$pingInt"}->{"ping"} = "$pingStatus";
+            $data->{"$pingInt"}->{"packetloss"} = "$percentagePacketLossForXML";
+            $pingInt = $pingInt + 1;
         }
-        $percentagePacketLoss = $pingResults * 10;
-      }
-    my $percentagePacketLossForXML = 0;
-    if ($percentagePacketLoss != 0) {
-      $percentagePacketLossForXML = $percentagePacketLoss;
+        my $arrayOutput=[];
+        foreach(keys %$data){
+            my $updatedHash = $data->{$_};
+            $updatedHash->{"number"} = $_;
+            push @$arrayOutput, $updatedHash;
+        }
+        return $arrayOutput;
+    } catch {
+        warn "Could not open XSAN configuration file /Library/Preferences/Xsan/fsnameservers\n";
+        return [];
     }
-    $data->{"$pingInt"}->{"ip"}="$_";
-    $data->{"$pingInt"}->{"ping"}="$pingStatus";
-    $data->{"$pingInt"}->{"packetloss"}="$percentagePacketLossForXML";
-    $pingInt = $pingInt + 1;
   }
-  my $arrayOutput=[];
-  foreach(keys %$data){
-    my $updatedHash = $data->{$_};
-    $updatedHash->{"number"} = $_;
-    push @$arrayOutput, $updatedHash;
-  }
-  return $arrayOutput;
-}
+
 
 print "Run starting on $hostname at " . DateTime->now() . " UTC\n";
 print "--------------------------------------------\n";
