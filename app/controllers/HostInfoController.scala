@@ -84,6 +84,10 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
           case Right(results) =>
             val resultList = results.result.to[HostInfo] //using the HostInfoHitReader trait
             Ok(ObjectListResponse[IndexedSeq[HostInfo]]("ok","entry",resultList,results.result.totalHits.toInt).asJson)
+        }).recover({
+          case ex:Throwable=>
+            logger.error("Could not process result from elastic: ", ex)
+            InternalServerError(GenericErrorResponse("error",ex.toString).asJson)
         })
       case None => Future(BadRequest(GenericErrorResponse("error", "you must specify a query string with ?q={string}").asJson))
     }
