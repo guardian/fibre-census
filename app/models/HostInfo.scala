@@ -6,8 +6,8 @@ import io.circe.generic.auto
 
 import scala.xml.NodeSeq
 
-object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Seq[MdcPing], ZonedDateTime)=>HostInfo) {
-  def fromXml(xml:NodeSeq, timestamp:ZonedDateTime):Either[String, HostInfo] = try {
+object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Seq[MdcPing], Seq[SanMount], ZonedDateTime)=>HostInfo) {
+  def fromXml(xml:NodeSeq, timestamp:ZonedDateTime):Either[Seq[String], HostInfo] = try {
     val fcInfos = if ((xml \ "fibrechannel").length==0){
       None
     } else {
@@ -30,30 +30,36 @@ object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo
     val driverInfo = if((xml \ "driverInfo").length==0){
       None
     } else {
-      Some((xml \ "driverInfo" \ "driver").map(DriverInfo.fromXml(_)).collect({case Right(info)=>info}))
+      Some((xml \ "driverInfo" \ "driver").map(DriverInfo.fromXml(_)))
     }
 
-    val pingInfos = (xml \ "mdcConnectivity").flatMap(node=>
-      {
-        val pingNodes = node.child
-        pingNodes.map(pingNode=>MdcPing.fromXml(pingNode))
-      }
-    ).collect({case Right(info)=>info})
+    val pingInfos = (xml \ "mdcConnectivity" \ "mdc").map(node=>MdcPing.fromXml(node))
 
-    Right(new HostInfo(xml \@ "hostname",
-      xml \@ "computerName",
-      xml \@ "model",
-      xml \@ "hw_uuid",
-      (xml \ "ipAddresses").map(_.text).toList,
-      fcInfos,
-      denyDlcVolumes,
-      driverInfo,
-      pingInfos,
-      timestamp))
+    val mountInfos = (xml \ "sanVolumesVisible" \ "mount").map(mountNode=>SanMount.fromXml(mountNode))
+
+    val errors = pingInfos.collect({case Left(err)=>err}) ++ mountInfos.collect({case Left(err)=>err}) ++ driverInfo.getOrElse(Seq()).collect({case Left(err)=>err})
+
+    if(errors.nonEmpty){
+      Left(errors)
+    } else {
+      Right(new HostInfo(xml \@ "hostname",
+        xml \@ "computerName",
+        xml \@ "model",
+        xml \@ "hw_uuid",
+        (xml \ "ipAddresses").map(_.text).toList,
+        fcInfos,
+        denyDlcVolumes,
+        driverInfo.map(_.collect({ case Right(info) => info })),
+        pingInfos.collect({ case Right(info) => info }),
+        mountInfos.collect({ case Right(info) => info }),
+        timestamp))
+    }
   } catch {
     case ex:Throwable=>
-      Left(ex.toString)
+      Left(Seq(ex.toString))
   }
 }
 
-case class HostInfo(hostName:String, computerName:String, model:String, hwUUID:String, ipAddresses: List[String], fibreChannel:Option[FCInfo], denyDlcVolumes:Option[Seq[String]], driverInfo:Option[Seq[DriverInfo]], mdcPing:Seq[MdcPing], lastUpdate:ZonedDateTime)
+case class HostInfo(hostName:String, computerName:String, model:String, hwUUID:String, ipAddresses: List[String],
+                    fibreChannel:Option[FCInfo], denyDlcVolumes:Option[Seq[String]], driverInfo:Option[Seq[DriverInfo]],
+                    mdcPing:Seq[MdcPing], sanMounts:Seq[SanMount], lastUpdate:ZonedDateTime)
