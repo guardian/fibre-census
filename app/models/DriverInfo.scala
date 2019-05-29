@@ -17,17 +17,7 @@ import scala.xml.NodeSeq
             'GetInfoString' => 'ATTO ExpressSAS HBA Driver 2.1.0 Copyright 2008-2013, ATTO Technology, Inc.'
           }
  */
-object DriverInfo extends ((String, String, String, String, String, String,String, Boolean, Boolean, String)=>DriverInfo){
-  def stringToBool(str:String):Boolean = str.toLowerCase() match {
-    case "yes"=>true
-    case "true"=>true
-    case "1"=>true
-    case "no"=>false
-    case "false"=>false
-    case "0"=>false
-    case _=>false
-  }
-
+object DriverInfo extends ((String, String, String, String, String, String,String, Boolean, Boolean, String)=>DriverInfo) with stringToBool {
   def fromXml(node:NodeSeq):Either[String,DriverInfo] = {
     try{
       Right(new DriverInfo(
