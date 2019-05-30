@@ -22,7 +22,7 @@ function validateRecord(record){
 
     const actualLunCount = record.fcLunCount.filter(entry=>entry>0);
     if(actualLunCount[0]===120){
-        return "luncount-warning";
+        return "warning";
     }
 
     if(actualLunCount[0]!==20){

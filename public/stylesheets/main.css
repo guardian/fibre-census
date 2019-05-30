@@ -69,6 +69,16 @@ A.selectlink:hover { color: white; background-color: #CCCCCC; }
 
 div.edit_rhs { float:right; top:0; height:90%; }
 
+span.informative {
+    margin-left: 0.6em;
+    font-style: italic;
+    font-size: 0.8em;
+}
+
+label {
+    margin-right: 0.4em;
+}
+
 table.dashboardpanel {
     border: 2px solid black;
     border-collapse: collapse;

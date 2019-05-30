@@ -6,7 +6,6 @@ import ReactTooltip from 'react-tooltip';
 /**
  * unimportant - circle-minus
  * warning      - exclamation-triangle
- * luncount-warning - exclamation-triangle
  * info         - exclamation-circle
  * normal       - nothing
  */
@@ -49,7 +48,7 @@ class ValidationComponent extends React.Component {
     iconForStatus(){
         if(this.state.status==="unimportant"){
             return <FontAwesomeIcon icon="minus-circle" style={{color: "grey"}}/>
-        } else if(this.state.status==="warning" || this.state.status==="luncount-warning"){
+        } else if(this.state.status==="warning"){
             return <FontAwesomeIcon icon="exclamation-triangle" style={{color: "red"}}/>
         } else if(this.state.status==="info"){
             return <FontAwesomeIcon icon="exclamation-circle" style={{color: "yellow"}}/>

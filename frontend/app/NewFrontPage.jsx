@@ -15,6 +15,7 @@ import ValidateLunCount from "./validation/ValidateLunCount.jsx";
 import ValidateSanVolumes from "./validation/ValidateSanVolumes.jsx";
 import ValidateFibreDrivers from "./validation/ValidateFibreDrivers.jsx";
 import ValidateMdcPing from "./validation/ValidateMdcPing.jsx";
+import ProblemsFilter from "./ProblemsFilter.jsx";
 
 class NewFrontPage extends React.Component {
     constructor(props){
@@ -26,9 +27,11 @@ class NewFrontPage extends React.Component {
             loading: false,
             lastError: null,
             showRelativeTime: true,
-            showDriverDetails: true
+            showDriverDetails: true,
+            currentFilter: "all",
+            filteredHitsCount: 0
         };
-
+        this.updateSearchTerms = this.updateSearchTerms.bind(this);
     }
 
     componentWillMount(){
@@ -53,7 +56,7 @@ class NewFrontPage extends React.Component {
         };
 
 
-        return Object.assign({
+        const initialMappedData = Object.assign({
             "hostName": rawData.hostName,
             "computerName": rawData.computerName,
             "model": rawData.model,
@@ -63,9 +66,23 @@ class NewFrontPage extends React.Component {
             "denyDlcVolumes": rawData.denyDlcVolumes,
             "mdcPing": rawData.mdcPing,
             "sanMounts": rawData.sanMounts
-        }, fcData)
+        }, fcData);
+
+        return Object.assign({
+            validation:  validateRecord(initialMappedData)
+        }, initialMappedData);
     }
 
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log("componentDidUpdate from: ", prevState);
+        console.log("componentDidUpdate to: ", this.state);
+        if(prevState.currentFilter!==this.state.currentFilter || prevState.data!==this.state.data){
+            console.log("refiltering: ", this.state.currentFilter);
+            const filteredHits = this.state.data.filter(entry=>this.state.currentFilter==="all" || this.state.currentFilter===entry.validation);
+            console.log("filteredHits: ", filteredHits);
+            this.setState({filteredHitsCount: filteredHits.length});
+        }
+    }
 
     refresh(){
         const searchTerm = encodeURIComponent(this.state.searchTerm ? this.state.searchTerm : "*");
@@ -78,6 +95,11 @@ class NewFrontPage extends React.Component {
         }));
     }
 
+
+    updateSearchTerms(evt){
+        this.setState({searchTerm: evt.target.value}, ()=>this.refresh());
+    }
+
     render(){
         return <div>
             <h1>Fibre Census</h1>
@@ -87,12 +109,16 @@ class NewFrontPage extends React.Component {
                 <input type="text" id="search-box" style={{width: "50%"}} onChange={this.updateSearchTerms}/>
                 <img style={{marginLeft:"auto",marginRight:"auto",width:"44px", display: this.state.loading ? "inline" : "none" }} src="/assets/images/Spinner-1s-44px.svg"/>
                 <input type="checkbox" checked={this.state.showDriverDetails} id="driver-details-check" onChange={event=>this.setState({showDriverDetails: !this.state.showDriverDetails})}/>
-                <label htmlFor="driver-details-check">Show driver details</label>
+                <label htmlFor="driver-details-check">Show driver details</label><br/>
+                <label>Showing</label><ProblemsFilter onChange={evt=>this.setState({currentFilter: evt.target.value})} value={this.state.currentFilter}/>
+                <span className="informative">{
+                    this.state.filteredHitsCount===this.state.data.length ? "Showing " + this.state.data.length + " reports" : "Showing " + this.state.filteredHitsCount + " from a total of " + this.state.data.length + " reports"
+                }</span>
             </div>
 
             <ul className="boxlist">
                 {
-                    this.state.data.map(entry=><li key={entry.hostName} className={"entry-container " + validateRecord(entry)}>
+                    this.state.data.map(entry=><li key={entry.hostName} className={"entry-container " + entry.validation} style={{display: this.state.currentFilter==="all" || this.state.currentFilter===entry.validation ? "block" : "none"}}>
                         <span className="entry-header">{entry.hostName} - <span className="entry-header-additional"><TimestampFormatter relative={this.state.showRelativeTime} value={entry.lastUpdate}/></span></span>
                         <DisplayFibreDrivers title="Fibre drivers present"
                                              listData={entry.driverInfo}
