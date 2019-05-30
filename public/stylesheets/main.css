@@ -150,3 +150,78 @@ ul.sub-list-1 {
 .driver-not-loaded {
     color: #888888;
 }
+
+ul.boxlist {
+    padding-left:0
+}
+
+li.entry-container {
+    list-style: none;
+    border: 2px solid black;
+    border-radius: 10px;
+    height: 400px;
+    width: 100%;
+    margin-bottom: 2em;
+    overflow: hidden;
+}
+
+span.entry-header {
+    display: block;
+    font-size: 1.1em;
+    margin-left: 0.5em;
+    margin-top: 0.5em;
+    font-weight: bold;
+}
+
+div.displaybox {
+    display: inline-block;
+    border: 1px solid darkgray;
+    border-radius: 3px;
+    width: 150px;
+    overflow: hidden;
+    margin-left: 1em;
+    margin-top: 0.5em;
+    vertical-align: top;
+}
+
+.doublewidth {
+    width: 300px !important;
+}
+
+.wider {
+    width: 220px !important;
+}
+
+.oversized {
+    display: block !important;
+    width: 400px !important;;
+    height: 330px !important;
+}
+
+.float-right {
+    float: right !important;
+    margin-right: 1em;
+    margin-bottom: 1em;
+}
+
+span.displaybox-title {
+    font-size: 1.1em;
+    background-color: #AAAAFF;
+    padding-right: 5px;
+    padding-left: 5px;
+    text-align: left;
+    width: 100%;
+    margin-right: 0;
+    overflow: hidden;
+    display: inline-block;
+    padding-bottom: 0.2em;
+}
+
+
+ul.content-list {
+    list-style: none;
+    margin-left: 0;
+    padding-left: 5px;
+    padding-bottom: 0.5em;
+}
+

@@ -6,6 +6,7 @@ import axios from 'axios';
 
 import NotFoundComponent from './NotFoundComponent.jsx';
 import FrontPage from './FrontPage.jsx';
+import NewFrontPage from './NewFrontPage.jsx';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -33,7 +34,7 @@ class App extends React.Component {
     render(){
         return <div>
             <Switch>
-                <Route path="/" exact={true} component={FrontPage}/>
+                <Route path="/" exact={true} component={NewFrontPage}/>
                 <Route default component={NotFoundComponent}/>
             </Switch>
         </div>
