@@ -114,7 +114,7 @@ tr.dashboardheader, th.dashboardheader, div.dashboardheader {
 }
 
 ul.addressList {
-    padding-left: 0;
+    padding-left: 0.2em;
     margin-top:0;
     list-style: none;
 }
@@ -122,9 +122,15 @@ ul.addressList {
 ul.sub-list-1 {
     margin-left: 0.2em;
 }
+
+ul.sub-list-deep {
+    margin-left: 1em;
+}
+
 .small-info {
     font-size: 0.7em;
     font-style: italic;
+    margin-bottom: 0.1em;
 }
 
 .generic-tooltip {
@@ -132,15 +138,15 @@ ul.sub-list-1 {
 }
 
 .luncount-warning {
-    background-color: #9966ff;
+    background-color: #a82828;
 }
 
 .warning {
-    background-color: #b52929;
+    background-color: #880000aa;
 }
 
 .info {
-    background-color: #b2b7ff;
+    background-color: #f4c842;
 }
 
 .unimportant {
@@ -178,10 +184,12 @@ span.entry-header-additional {
     font-style: italic;
     font-size: 0.9em !important;
 }
+
 div.displaybox {
     display: inline-block;
     border: 1px solid darkgray;
     border-radius: 3px;
+    background-color: white;
     width: 150px;
     overflow: hidden;
     margin-left: 1em;
@@ -201,7 +209,9 @@ div.displaybox {
     display: block !important;
     width: 400px !important;;
     height: 330px !important;
+    overflow-y: auto !important;
 }
+
 
 .float-right {
     float: right !important;
@@ -211,6 +221,7 @@ div.displaybox {
 
 span.displaybox-title {
     font-size: 1.1em;
+    color: black !important;
     background-color: #AAAAFF;
     padding-right: 5px;
     padding-left: 5px;
@@ -230,3 +241,8 @@ ul.content-list {
     padding-bottom: 0.5em;
 }
 
+.validation-icon {
+    float: right;
+    margin-left: auto;
+    margin-right: 0.5em;
+}

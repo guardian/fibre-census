@@ -29,10 +29,10 @@ class UserHistoryComponent extends React.Component {
         this.setState({loading: true, lastError: null},
             ()=>axios.get("/api/logins/" + hostParts[0] + "?limit=" + limit)
                 .then(response=>{
-                    this.setState({loading: false, lastError: null, records: response.data.entries})
+                    this.setState({loading: false, lastError: null, records: response.data.entries},()=>ReactTooltip.rebuild())
                 })
                 .catch(err=>{
-                    this.setState({loading: false, lastError: err})
+                    this.setState({loading: false, lastError: err}, ()=>ReactTooltip.rebuild())
                 })
         )
     }

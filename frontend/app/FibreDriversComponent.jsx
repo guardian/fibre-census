@@ -11,7 +11,7 @@ class FibreDriversComponent extends React.Component {
         //{entry.driverName}@{entry.version}; dependencies {entry.dependencies.toLowerCase()}; loaded: {entry.loaded ? "yes" : "no"}
         return <li key={entry.driverName} className={entry.loaded ? "" : "driver-not-loaded"}>
             <span style={{display: "block"}}>{entry.driverName}</span>
-            <ul className="addressList" style={{display: this.props.showDetails ? "inherit" : "none" }}>
+            <ul className="addressList sub-list-deep" style={{display: this.props.showDetails ? "inherit" : "none" }}>
                 <li className="small-info">{entry.getInfoString}</li>
                 <li className="small-info">version: {entry.version}</li>
                 <li className="small-info">dependencies {entry.dependencies.toLowerCase()}</li>

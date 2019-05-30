@@ -6,7 +6,8 @@ class DisplayBox extends React.Component {
         title: PropTypes.string,
         entry: PropTypes.object.isRequired,
         extraClasses: PropTypes.string,
-        listData: PropTypes.array
+        listData: PropTypes.array,
+        validationComponent: PropTypes.object
     };
 
     /**
@@ -20,7 +21,7 @@ class DisplayBox extends React.Component {
     render(){
         const classNameList = this.props.extraClasses ? "displaybox  " + this.props.extraClasses  : "displaybox";
         return <div className={classNameList}>
-            <span className="displaybox-title">{this.props.title}</span>
+            <span className="displaybox-title">{this.props.title}{this.props.validationComponent ? this.props.validationComponent : ""}</span>
             <div className="displaybox-content">
                 {
                     this.renderBodyContent()

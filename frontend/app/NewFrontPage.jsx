@@ -6,6 +6,15 @@ import DisplayTextList from "./displayboxes/DisplayTextList.jsx";
 import DisplayMdcPing from "./displayboxes/DisplayMdcPing.jsx";
 import DisplayFibreDrivers from "./displayboxes/DisplayFibreDrivers.jsx";
 import TimestampFormatter from "./common/TimestampFormatter.jsx";
+import {validateRecord} from './validation.jsx';
+import ValidateModel from "./validation/ValidateModel.jsx";
+import ReactTooltip from "react-tooltip";
+import ValidateIpAddresses from "./validation/ValidateIpAddresses.jsx";
+import ValidateFCWWN from "./validation/ValidateFCWWN.jsx";
+import ValidateLunCount from "./validation/ValidateLunCount.jsx";
+import ValidateSanVolumes from "./validation/ValidateSanVolumes.jsx";
+import ValidateFibreDrivers from "./validation/ValidateFibreDrivers.jsx";
+import ValidateMdcPing from "./validation/ValidateMdcPing.jsx";
 
 class NewFrontPage extends React.Component {
     constructor(props){
@@ -83,28 +92,38 @@ class NewFrontPage extends React.Component {
 
             <ul className="boxlist">
                 {
-                    this.state.data.map(entry=><li key={entry.hostName} className="entry-container">
+                    this.state.data.map(entry=><li key={entry.hostName} className={"entry-container " + validateRecord(entry)}>
                         <span className="entry-header">{entry.hostName} - <span className="entry-header-additional"><TimestampFormatter relative={this.state.showRelativeTime} value={entry.lastUpdate}/></span></span>
                         <DisplayFibreDrivers title="Fibre drivers present"
                                              listData={entry.driverInfo}
                                              showDetails={this.state.showDriverDetails}
-                                             extraClasses="oversized float-right"/>
-                        <DisplaySimpleText title="Model" entry={entry.model}/>
+                                             validationComponent={<ValidateFibreDrivers listData={entry.driverInfo}/>}
+                                             extraClasses="oversized float-right"
+                        />
+                        <DisplaySimpleText title="Model" entry={entry.model} validationComponent={<ValidateModel stringData={entry.model}/>}/>
                         <DisplaySimpleText title="Computer Name" entry={entry.computerName} extraClasses="wider"/>
-                        <DisplayTextList title="IP Addresses" listData={entry.ipAddresses}/>
+                        <DisplayTextList title="IP Addresses" listData={entry.ipAddresses} validationComponent={<ValidateIpAddresses listData={entry.ipAddresses}/>}/>
                         <DisplayRecentUsers title="Recent Users" entry={entry} extraClasses="doublewidth"/>
-                        <DisplayTextList title="Fibre WWNs" listData={entry.fcWWN} extraClasses="wider"/>
+                        <DisplayTextList title="Fibre WWNs" listData={entry.fcWWN} extraClasses="wider" validationComponent={<ValidateFCWWN listData={entry.fcWWN}/>}/>
                         <DisplayTextList title="Fibre status" listData={entry.fcStatus}/>
                         <DisplayTextList title="Fibre speed" listData={entry.fcSpeed}/>
-                        <DisplayTextList title="Fibre LUN count" listData={entry.fcLunCount}/>
-                        <DisplayTextList title="DenyDLC" listData={entry.denyDlcVolumes}/>
+                        <DisplayTextList title="LUN count" listData={entry.fcLunCount} validationComponent={<ValidateLunCount listData={entry.fcLunCount}/>}/>
+                        <DisplayTextList title="DenyDLC" listData={entry.denyDlcVolumes} validationComponent={<ValidateSanVolumes listData={entry.denyDlcVolumes}/>}/>
                         <DisplaySimpleText title="Fibre adaptor model" entry={entry.fcAdaptor} extraClasses="wider"/>
-                        <DisplayMdcPing title="MDC Controller Connectivity" listData={entry.mdcPing} extraClasses="doublewidth"/>
-                        <DisplayTextList title="SAN mounts" listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}/>
+                        <DisplayMdcPing title="MDC Controller Connectivity"
+                                        listData={entry.mdcPing}
+                                        extraClasses="doublewidth"
+                                        validationComponent={<ValidateMdcPing listData={entry.mdcPing}/>}
+                        />
+                        <DisplayTextList title="SAN mounts"
+                                         listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}
+                                         validationComponent={<ValidateSanVolumes listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}/>}
+                        />
                     </li> )
                 }
 
             </ul>
+            <ReactTooltip/>
         </div>
     }
 }
