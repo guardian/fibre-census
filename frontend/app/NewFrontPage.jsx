@@ -117,7 +117,9 @@ class NewFrontPage extends React.Component {
             const updatedA = moment(a.lastUpdate);
             const updatedB = moment(b.lastUpdate);
 
-            return this.state.sortOrder==="ascending" ? updatedB.isBefore(updatedA) : updatedA.isBefore(updatedB);
+            if(updatedA.isSame(updatedB)) return 0;
+            const reverse = this.state.sortOrder==="ascending" ? updatedB.isBefore(updatedA) : updatedA.isBefore(updatedB);
+            return reverse ? -1 : 1;
         };
 
         let currentSortFunc;
