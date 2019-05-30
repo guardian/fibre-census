@@ -3,9 +3,9 @@ import axios from 'axios';
 import DisplaySimpleText from './displayboxes/DisplaySimpleText.jsx';
 import DisplayRecentUsers from "./displayboxes/DisplayRecentUsers.jsx";
 import DisplayTextList from "./displayboxes/DisplayTextList.jsx";
-import DisplayTimestamp from "./displayboxes/DisplayTimestamp.jsx";
 import DisplayMdcPing from "./displayboxes/DisplayMdcPing.jsx";
 import DisplayFibreDrivers from "./displayboxes/DisplayFibreDrivers.jsx";
+import TimestampFormatter from "./common/TimestampFormatter.jsx";
 
 class NewFrontPage extends React.Component {
     constructor(props){
@@ -84,7 +84,7 @@ class NewFrontPage extends React.Component {
             <ul className="boxlist">
                 {
                     this.state.data.map(entry=><li key={entry.hostName} className="entry-container">
-                        <span className="entry-header">{entry.hostName}</span>
+                        <span className="entry-header">{entry.hostName} - <span className="entry-header-additional"><TimestampFormatter relative={this.state.showRelativeTime} value={entry.lastUpdate}/></span></span>
                         <DisplayFibreDrivers title="Fibre drivers present"
                                              listData={entry.driverInfo}
                                              showDetails={this.state.showDriverDetails}
@@ -95,10 +95,9 @@ class NewFrontPage extends React.Component {
                         <DisplayRecentUsers title="Recent Users" entry={entry} extraClasses="doublewidth"/>
                         <DisplayTextList title="Fibre WWNs" listData={entry.fcWWN} extraClasses="wider"/>
                         <DisplayTextList title="Fibre status" listData={entry.fcStatus}/>
-                        <DisplayTextList title="DenyDLC" listData={entry.denyDlcVolumes}/>
-                        <DisplayTimestamp title="Snapshot taken" entry={entry.lastUpdate}/>
                         <DisplayTextList title="Fibre speed" listData={entry.fcSpeed}/>
                         <DisplayTextList title="Fibre LUN count" listData={entry.fcLunCount}/>
+                        <DisplayTextList title="DenyDLC" listData={entry.denyDlcVolumes}/>
                         <DisplaySimpleText title="Fibre adaptor model" entry={entry.fcAdaptor} extraClasses="wider"/>
                         <DisplayMdcPing title="MDC Controller Connectivity" listData={entry.mdcPing} extraClasses="doublewidth"/>
                         <DisplayTextList title="SAN mounts" listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}/>

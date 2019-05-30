@@ -173,6 +173,11 @@ span.entry-header {
     font-weight: bold;
 }
 
+span.entry-header-additional {
+    font-weight: normal !important;
+    font-style: italic;
+    font-size: 0.9em !important;
+}
 div.displaybox {
     display: inline-block;
     border: 1px solid darkgray;
