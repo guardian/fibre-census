@@ -16,6 +16,8 @@ import ValidateSanVolumes from "./validation/ValidateSanVolumes.jsx";
 import ValidateFibreDrivers from "./validation/ValidateFibreDrivers.jsx";
 import ValidateMdcPing from "./validation/ValidateMdcPing.jsx";
 import ProblemsFilter from "./ProblemsFilter.jsx";
+import SortSelector from "./SortSelector.jsx";
+import moment from 'moment';
 
 class NewFrontPage extends React.Component {
     constructor(props){
@@ -29,9 +31,13 @@ class NewFrontPage extends React.Component {
             showRelativeTime: true,
             showDriverDetails: true,
             currentFilter: "all",
-            filteredHitsCount: 0
+            filteredHitsCount: 0,
+            sortField: "time",
+            sortOrder: "descending",
+            sortDone: false
         };
         this.updateSearchTerms = this.updateSearchTerms.bind(this);
+        this.sortUpdated = this.sortUpdated.bind(this);
     }
 
     componentWillMount(){
@@ -88,16 +94,49 @@ class NewFrontPage extends React.Component {
         const searchTerm = encodeURIComponent(this.state.searchTerm ? this.state.searchTerm : "*");
 
         this.setState({loading: true, lastError:null, data:[]}, ()=>axios.get("/api/search/basic?q=" + searchTerm + "&length=100").then(result=>{
-            this.setState({data: result.data.entries.map(entry=>this.mapOutData(entry)), totalHitCount: result.data.entryCount, loading: false, lastError: null});
+            this.setState({data: result.data.entries.map(entry=>this.mapOutData(entry)), totalHitCount: result.data.entryCount, loading: false, lastError: null, sortDone: false}, ()=>this.doSort());
         }).catch(err=>{
             console.error(err);
-            this.setState({loading: false, lastError: err});
+            this.setState({loading: false, lastError: err, sortDone: true});
         }));
     }
 
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        if(!nextState.sortDone) return false;
+        return true
+    }
+
+    doSort(){
+        const hostnameSortFunc = (a,b)=>{
+            const hostnameA = a.hostName;
+            const hostnameB = b.hostName;
+            return this.state.sortOrder==="ascending" ? hostnameA.localeCompare(hostnameB) : hostnameB.localeCompare(hostnameA);
+        };
+
+        const updateTimeSortFunc = (a,b)=>{
+            const updatedA = moment(a.lastUpdate);
+            const updatedB = moment(b.lastUpdate);
+
+            return this.state.sortOrder==="ascending" ? updatedB.isBefore(updatedA) : updatedA.isBefore(updatedB);
+        };
+
+        let currentSortFunc;
+        if(this.state.sortField==="hostname") currentSortFunc = hostnameSortFunc;
+        if(this.state.sortField==="time") currentSortFunc = updateTimeSortFunc;
+
+        const sorted = this.state.data.sort(currentSortFunc);
+        this.setState({data: sorted, sortDone: true});
+
+    }
 
     updateSearchTerms(evt){
         this.setState({searchTerm: evt.target.value}, ()=>this.refresh());
+    }
+
+    sortUpdated(newField, newOrder){
+        console.log("sortUpdated: ", newField, newOrder);
+
+        this.setState({sortField: newField, sortOrder:newOrder},()=>this.doSort());
     }
 
     render(){
@@ -113,7 +152,8 @@ class NewFrontPage extends React.Component {
                 <label>Showing</label><ProblemsFilter onChange={evt=>this.setState({currentFilter: evt.target.value})} value={this.state.currentFilter}/>
                 <span className="informative">{
                     this.state.filteredHitsCount===this.state.data.length ? "Showing " + this.state.data.length + " reports" : "Showing " + this.state.filteredHitsCount + " from a total of " + this.state.data.length + " reports"
-                }</span>
+                }</span><br/>
+                <label>Sorted by</label><SortSelector value={this.state.sortField} order={this.state.sortOrder} onChange={this.sortUpdated}/>
             </div>
 
             <ul className="boxlist">
