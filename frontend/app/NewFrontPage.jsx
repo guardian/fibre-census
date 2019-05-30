@@ -102,13 +102,21 @@ class NewFrontPage extends React.Component {
                         />
                         <DisplaySimpleText title="Model" entry={entry.model} validationComponent={<ValidateModel stringData={entry.model}/>}/>
                         <DisplaySimpleText title="Computer Name" entry={entry.computerName} extraClasses="wider"/>
-                        <DisplayTextList title="IP Addresses" listData={entry.ipAddresses} validationComponent={<ValidateIpAddresses listData={entry.ipAddresses}/>}/>
+                        <DisplayTextList title="IP Addresses"
+                                         bulletIcon="network-wired"
+                                         listData={entry.ipAddresses}
+                                         validationComponent={<ValidateIpAddresses listData={entry.ipAddresses}/>}
+                        />
                         <DisplayRecentUsers title="Recent Users" entry={entry} extraClasses="doublewidth"/>
                         <DisplayTextList title="Fibre WWNs" listData={entry.fcWWN} extraClasses="wider" validationComponent={<ValidateFCWWN listData={entry.fcWWN}/>}/>
                         <DisplayTextList title="Fibre status" listData={entry.fcStatus}/>
                         <DisplayTextList title="Fibre speed" listData={entry.fcSpeed}/>
                         <DisplayTextList title="LUN count" listData={entry.fcLunCount} validationComponent={<ValidateLunCount listData={entry.fcLunCount}/>}/>
-                        <DisplayTextList title="DenyDLC" listData={entry.denyDlcVolumes} validationComponent={<ValidateSanVolumes listData={entry.denyDlcVolumes}/>}/>
+                        <DisplayTextList title="DenyDLC"
+                                         bulletIcon="hdd"
+                                         listData={entry.denyDlcVolumes}
+                                         validationComponent={<ValidateSanVolumes listData={entry.denyDlcVolumes}/>}
+                        />
                         <DisplaySimpleText title="Fibre adaptor model" entry={entry.fcAdaptor} extraClasses="wider"/>
                         <DisplayMdcPing title="MDC Controller Connectivity"
                                         listData={entry.mdcPing}
@@ -116,6 +124,7 @@ class NewFrontPage extends React.Component {
                                         validationComponent={<ValidateMdcPing listData={entry.mdcPing}/>}
                         />
                         <DisplayTextList title="SAN mounts"
+                                         bulletIcon="hdd"
                                          listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}
                                          validationComponent={<ValidateSanVolumes listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}/>}
                         />

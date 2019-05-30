@@ -157,6 +157,10 @@ ul.sub-list-deep {
     color: #888888;
 }
 
+.list-bullet-icon {
+    margin-right: 0.2em;
+}
+
 ul.boxlist {
     padding-left:0
 }
