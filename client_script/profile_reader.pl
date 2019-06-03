@@ -45,7 +45,7 @@ sub getFibreInfo {
     $data->{"Domain_$domainId"}->{"lunCount"}=0 if($domainId>=0 and not defined $data->{"Domain_$domainId"});
 
     $data->{"Domain_$domainId"}->{"Status"}=$1 if(/^\s+Status: (.*)$/);
-    $data->{"Domain_$domainId"}->{"WWN"}=$1 if(/^\s+Port World Wide Name: (.*)$/);
+    $data->{"Domain_$domainId"}->{"WWN"}=$1 if(/^\s+Port World Wide Name: (.*)$/ and not defined $data->{"Domain_$domainId"}->{"WWN"});
     $data->{"Domain_$domainId"}->{"Speed"}=$1 if(/^\s+Speed: (.*)$/);
     ++($data->{"Domain_$domainId"}->{"lunCount"}) if(/^\s+SCSI Logical Unit (.*)$/);
 
