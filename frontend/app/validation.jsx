@@ -7,18 +7,18 @@ const mustHaveVolumes = [
 function validateMdcPing(mdcPing){
     const visibleMdcList = mdcPing.filter(entry=>entry.visible);
     if(visibleMdcList.length===0){
-        this.setState({tooltip: "No metadata controllers visible"});
+        //this.setState({tooltip: "No metadata controllers visible"});
         return "warning";
     }
 
     if(visibleMdcList.length!==mdcPing.length){
-        this.setState({tooltip: "Not all metadata controllers visible"});
+        //this.setState({tooltip: "Not all metadata controllers visible"});
         return "info";
     }
 
     const highPacketCounts = mdcPing.filter(entry=>entry.packetloss>0);
     if(highPacketCounts.length>0){
-        this.setState({tooltip: "Packet loss seen, check network connections"});
+        //this.setState({tooltip: "Packet loss seen, check network connections"});
         return "info";
     }
     return "normal";
