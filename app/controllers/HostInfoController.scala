@@ -10,7 +10,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.{Configuration, Logger}
 import play.api.mvc.{AbstractController, ControllerComponents, PlayBodyParsers}
 import models.{HostInfo, RecentLogin}
-import responses.{GenericErrorResponse, ObjectListResponse}
+import responses.{GenericErrorResponse, ObjectListResponse, ErrorListResponse}
 import io.circe.generic.auto._
 import io.circe.syntax._
 import play.api.http.{DefaultHttpErrorHandler, HttpErrorHandler, ParserConfiguration}
@@ -51,7 +51,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
         val idToUse = s"${entry.hostName}"
 
         client.execute {
-            update(idToUse).in(s"$indexName/entry").docAsUpsert(entry),
+            update(idToUse).in(s"$indexName/entry").docAsUpsert(entry)
         }.map({
           case Left(failure) => InternalServerError(GenericErrorResponse("elasticsearch_error", failure.error.toString).asJson)
           case Right(success) =>
@@ -62,7 +62,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
             Future(InternalServerError(GenericErrorResponse("elasticsearch_error", ex.getLocalizedMessage).asJson))
         })
       case Left(err)=>
-        Future(BadRequest(GenericErrorResponse("bad_data", err).asJson))
+        Future(BadRequest(ErrorListResponse("bad_data", err).asJson))
     }
   }
 
@@ -84,6 +84,10 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
           case Right(results) =>
             val resultList = results.result.to[HostInfo] //using the HostInfoHitReader trait
             Ok(ObjectListResponse[IndexedSeq[HostInfo]]("ok","entry",resultList,results.result.totalHits.toInt).asJson)
+        }).recover({
+          case ex:Throwable=>
+            logger.error("Could not process result from elastic: ", ex)
+            InternalServerError(GenericErrorResponse("error",ex.toString).asJson)
         })
       case None => Future(BadRequest(GenericErrorResponse("error", "you must specify a query string with ?q={string}").asJson))
     }

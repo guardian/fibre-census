@@ -6,13 +6,14 @@ import axios from 'axios';
 
 import NotFoundComponent from './NotFoundComponent.jsx';
 import FrontPage from './FrontPage.jsx';
+import NewFrontPage from './NewFrontPage.jsx';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHdd, faUserAlt } from '@fortawesome/free-solid-svg-icons'
+import { faHdd, faUserAlt, faMinusCircle, faExclamationCircle, faExclamationTriangle, faCheck, faCheckCircle, faNetworkWired } from '@fortawesome/free-solid-svg-icons'
 import { faChevronCircleDown,faChevronCircleRight,faTrashAlt, faFilm, faVolumeUp,faImage, faFile } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faHdd, faUserAlt);
+library.add(faHdd, faUserAlt, faMinusCircle, faExclamationCircle, faExclamationTriangle, faCheck, faCheckCircle, faNetworkWired);
 library.add(faFilm, faVolumeUp, faImage, faFilm, faFile);
 window.React = require('react');
 
@@ -33,7 +34,7 @@ class App extends React.Component {
     render(){
         return <div>
             <Switch>
-                <Route path="/" exact={true} component={FrontPage}/>
+                <Route path="/" exact={true} component={NewFrontPage}/>
                 <Route default component={NotFoundComponent}/>
             </Switch>
         </div>
