@@ -13,7 +13,7 @@ curl https://multimedia-public-downloadables.s3-eu-west-1.amazonaws.com/fibrecen
 unzip fibrecensus-client.zip
 
 mv fibrecensus-launcher.plist fibrecensus-launcher.plist.old
-cat fibrecensus-launcher.plist.old | sed s?https://server-uri-here?1? > fibrecensus-launcher.plist
+cat fibrecensus-launcher.plist.old | sed s?https://server-uri-here?$1? > fibrecensus-launcher.plist
 
 bash ./install.sh
 
