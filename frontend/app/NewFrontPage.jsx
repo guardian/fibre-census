@@ -157,6 +157,7 @@ class NewFrontPage extends React.Component {
         }
 
         axios.delete("/api/delete/" + item, axiosConfig).then(response=> {
+                this.setState({loading:true});
                 sleep(1000).then(() => {
                     this.refresh();
                 })
