@@ -35,7 +35,8 @@ class NewFrontPage extends React.Component {
             filteredHitsCount: 0,
             sortField: "time",
             sortOrder: "descending",
-            sortDone: false
+            sortDone: false,
+            data: []
         };
         this.updateSearchTerms = this.updateSearchTerms.bind(this);
         this.sortUpdated = this.sortUpdated.bind(this);
@@ -94,7 +95,7 @@ class NewFrontPage extends React.Component {
     refresh(){
         const searchTerm = encodeURIComponent(this.state.searchTerm ? this.state.searchTerm : "*");
 
-        this.setState({loading: true, lastError:null, data:[]}, ()=>axios.get("/api/search/basic?q=" + searchTerm + "&length=100").then(result=>{
+        this.setState({loading: true, lastError:null}, ()=>axios.get("/api/search/basic?q=" + searchTerm + "&length=100").then(result=>{
             this.setState({data: result.data.entries.map(entry=>this.mapOutData(entry)), totalHitCount: result.data.entryCount, loading: false, lastError: null, sortDone: false}, ()=>this.doSort());
         }).catch(err=>{
             console.error(err);
@@ -155,15 +156,12 @@ class NewFrontPage extends React.Component {
             return new Promise(resolve => setTimeout(resolve, milliseconds))
         }
 
-        try {
-            const response = axios.delete("/api/delete/" + item, axiosConfig);
-            console.log('Returned data:', response);
-            sleep(500).then(() => {
-                window.location.reload();
-            })
-        } catch (e) {
-            console.log(`Axios request failed: ${e}`);
-        }
+        axios.delete("/api/delete/" + item, axiosConfig).then(response=> {
+                sleep(1000).then(() => {
+                    this.refresh();
+                })
+            }
+        )
     }
 
     render(){
