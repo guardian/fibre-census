@@ -18,6 +18,7 @@ import ValidateMdcPing from "./validation/ValidateMdcPing.jsx";
 import ProblemsFilter from "./ProblemsFilter.jsx";
 import SortSelector from "./SortSelector.jsx";
 import moment from 'moment';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 class NewFrontPage extends React.Component {
     constructor(props){
@@ -141,6 +142,18 @@ class NewFrontPage extends React.Component {
         this.setState({sortField: newField, sortOrder:newOrder},()=>this.doSort());
     }
 
+    deleteItem(event, item) {
+        console.log('About to delete record for '+item);
+
+        let axiosConfig = {
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }
+
+        axios.delete("/api/delete/" + item, axiosConfig);
+    }
+
     render(){
         return <div>
             <h1>Fibre Census</h1>
@@ -161,7 +174,7 @@ class NewFrontPage extends React.Component {
             <ul className="boxlist">
                 {
                     this.state.data.map(entry=><li key={entry.hostName} className={"entry-container " + entry.validation} style={{display: this.state.currentFilter==="all" || this.state.currentFilter===entry.validation ? "block" : "none"}}>
-                        <span className="entry-header">{entry.hostName} - <span className="entry-header-additional"><TimestampFormatter relative={this.state.showRelativeTime} value={entry.lastUpdate}/></span></span>
+                        <span className="entry-header">{entry.hostName} - <span className="entry-header-additional"><TimestampFormatter relative={this.state.showRelativeTime} value={entry.lastUpdate}/></span><span className="float-right"><FontAwesomeIcon icon="times-circle" onClick={e => window.confirm("This entry will be deleted.\nContinue?") && this.deleteItem(e, entry.hostName)} /></span></span>
                         <DisplayFibreDrivers title="Fibre drivers present"
                                              listData={entry.driverInfo}
                                              showDetails={this.state.showDriverDetails}

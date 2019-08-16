@@ -10,10 +10,10 @@ import NewFrontPage from './NewFrontPage.jsx';
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHdd, faUserAlt, faMinusCircle, faExclamationCircle, faExclamationTriangle, faCheck, faCheckCircle, faNetworkWired } from '@fortawesome/free-solid-svg-icons'
+import { faHdd, faUserAlt, faMinusCircle, faExclamationCircle, faExclamationTriangle, faCheck, faCheckCircle, faNetworkWired, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
 import { faChevronCircleDown,faChevronCircleRight,faTrashAlt, faFilm, faVolumeUp,faImage, faFile } from '@fortawesome/free-solid-svg-icons'
 
-library.add(faHdd, faUserAlt, faMinusCircle, faExclamationCircle, faExclamationTriangle, faCheck, faCheckCircle, faNetworkWired);
+library.add(faHdd, faUserAlt, faMinusCircle, faExclamationCircle, faExclamationTriangle, faCheck, faCheckCircle, faNetworkWired, faTimesCircle);
 library.add(faFilm, faVolumeUp, faImage, faFilm, faFile);
 window.React = require('react');
 

@@ -15,3 +15,5 @@ POST    /api/hostinfo                   @controllers.HostInfoController.addRecor
 
 POST    /api/logins             @controllers.LoginHistoryController.updateLogins
 GET     /api/logins/:hostname   @controllers.LoginHistoryController.loginsFor(hostname,limit:Option[Int])
++ nocsrf
+DELETE  /api/delete/:hostname   @controllers.DeleteController.deleteFor(hostname)
