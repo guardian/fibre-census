@@ -151,7 +151,19 @@ class NewFrontPage extends React.Component {
             }
         }
 
-        axios.delete("/api/delete/" + item, axiosConfig);
+        const sleep = (milliseconds) => {
+            return new Promise(resolve => setTimeout(resolve, milliseconds))
+        }
+
+        try {
+            const response = axios.delete("/api/delete/" + item, axiosConfig);
+            console.log('Returned data:', response);
+            sleep(500).then(() => {
+                window.location.reload();
+            })
+        } catch (e) {
+            console.log(`Axios request failed: ${e}`);
+        }
     }
 
     render(){
