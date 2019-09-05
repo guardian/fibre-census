@@ -18,6 +18,7 @@ import ValidateMdcPing from "./validation/ValidateMdcPing.jsx";
 import ProblemsFilter from "./ProblemsFilter.jsx";
 import SortSelector from "./SortSelector.jsx";
 import moment from 'moment';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 class NewFrontPage extends React.Component {
     constructor(props){
@@ -34,7 +35,8 @@ class NewFrontPage extends React.Component {
             filteredHitsCount: 0,
             sortField: "time",
             sortOrder: "descending",
-            sortDone: false
+            sortDone: false,
+            data: []
         };
         this.updateSearchTerms = this.updateSearchTerms.bind(this);
         this.sortUpdated = this.sortUpdated.bind(this);
@@ -93,7 +95,7 @@ class NewFrontPage extends React.Component {
     refresh(){
         const searchTerm = encodeURIComponent(this.state.searchTerm ? this.state.searchTerm : "*");
 
-        this.setState({loading: true, lastError:null, data:[]}, ()=>axios.get("/api/search/basic?q=" + searchTerm + "&length=100").then(result=>{
+        this.setState({loading: true, lastError:null}, ()=>axios.get("/api/search/basic?q=" + searchTerm + "&length=100").then(result=>{
             this.setState({data: result.data.entries.map(entry=>this.mapOutData(entry)), totalHitCount: result.data.entryCount, loading: false, lastError: null, sortDone: false}, ()=>this.doSort());
         }).catch(err=>{
             console.error(err);
@@ -141,6 +143,25 @@ class NewFrontPage extends React.Component {
         this.setState({sortField: newField, sortOrder:newOrder},()=>this.doSort());
     }
 
+    deleteItem(event, item) {
+        console.log('About to delete record for '+item);
+
+        let axiosConfig = {
+            headers: {
+                "Content-Type": "application/json"
+            }
+        }
+
+        const sleep = (milliseconds) => {
+            return new Promise(resolve => setTimeout(resolve, milliseconds))
+        }
+
+        axios.delete("/api/delete/" + item, axiosConfig).then(response=> {
+                this.setState({loading:true}, ()=>sleep(1000).then(()=>this.refresh()));
+            }
+        )
+    }
+
     render(){
         return <div>
             <h1>Fibre Census</h1>
@@ -161,7 +182,7 @@ class NewFrontPage extends React.Component {
             <ul className="boxlist">
                 {
                     this.state.data.map(entry=><li key={entry.hostName} className={"entry-container " + entry.validation} style={{display: this.state.currentFilter==="all" || this.state.currentFilter===entry.validation ? "block" : "none"}}>
-                        <span className="entry-header">{entry.hostName} - <span className="entry-header-additional"><TimestampFormatter relative={this.state.showRelativeTime} value={entry.lastUpdate}/></span></span>
+                        <span className="entry-header">{entry.hostName} - <span className="entry-header-additional"><TimestampFormatter relative={this.state.showRelativeTime} value={entry.lastUpdate}/></span><span className="float-right"><FontAwesomeIcon icon="times-circle" onClick={e => window.confirm("This entry will be deleted.\nContinue?") && this.deleteItem(e, entry.hostName)} /></span></span>
                         <DisplayFibreDrivers title="Fibre drivers present"
                                              listData={entry.driverInfo}
                                              showDetails={this.state.showDriverDetails}
