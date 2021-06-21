@@ -18,6 +18,15 @@ var config = {
         path: BUILD_DIR,
         filename: 'bundle.js'
     },
+    resolve: {
+        extensions: [".ts", ".tsx", ".js", ".jsx"],
+        fallback: {
+            stream: require.resolve("stream-browserify"),
+            util: require.resolve("util/"),
+            crypto: require.resolve("crypto-browserify"),
+            buffer: require.resolve("buffer/"),
+        },
+    },
     optimization: {
         minimizer: [new TerserPlugin()]
     },
@@ -33,7 +42,13 @@ var config = {
                 use: ['style-loader', 'css-loader']
             }
         ]
-    }
+    },
+    plugins: [
+        new webpack.ProvidePlugin({
+            process: "process/browser",
+        }),
+    ],
+    devtool: "source-map"
 };
 
 module.exports = config;
