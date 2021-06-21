@@ -39,13 +39,13 @@ function validateRecord(record){
 
     if(!record.mdcPing) return "info";
     const mdcStatus = validateMdcPing(record.mdcPing);
-    if(mdcStatus!=="normal") return "normal";
+    if(mdcStatus!=="normal") return mdcStatus;
 
 
     const actualLunCount = record.fcLunCount.filter(entry=>entry>0);
 
-    if(actualLunCount[0]!==20){
-        console.log(record.hostName + " only has " + actualLunCount + " LUNs visible (expected 20)");
+    if(actualLunCount[0]!==40){
+        console.log(record.hostName + " only has " + actualLunCount + " LUNs visible (expected 40)");
         return "warning";
     }
 
