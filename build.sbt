@@ -41,7 +41,6 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-java8" % circeVersion,
   "com.dripower" %% "play-circe" % "2610.0"
 )
-libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.12.6"
 
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
 
