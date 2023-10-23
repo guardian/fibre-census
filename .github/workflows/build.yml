@@ -55,7 +55,7 @@ jobs:
         working-directory: frontend
 
       - run: yarn install --frozen-lockfile
-        working-directory: cdslogviewer/frontend
+        working-directory: frontend
         env:
           NODE_AUTH_TOKEN: ${{secrets.GITHUB_TOKEN}}
 
