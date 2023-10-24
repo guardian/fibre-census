@@ -2,9 +2,9 @@ name: Build and Upload Fibre Census
 
 on:
   push:
-    branches: [ "**" ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build:
