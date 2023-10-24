@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./
     permissions:
       id-token: write
       contents: read
@@ -79,19 +82,3 @@ jobs:
 
       - name: Push docker image fibrecensus
         run: docker push  ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/fibre-census:${{ env.GITHUB_RUN_NUMBER }}
-
-      - name: Output build-info.yaml
-        uses: fredex42/pluto-build-info@v1.1
-        with:
-          builtimage: AWS_ACCOUNT_ID.dkr.ecr.AWS_REGION.amazonaws.com/fibre-census:${{ env.GITHUB_RUN_NUMBER }}
-          token: ${{ secrets.GITHUB_TOKEN }}
-          filename: build-info.yaml
-
-      - name: Check the output
-        run: cat build-info.yaml
-
-      - name: Upload build info
-        uses: actions/upload-artifact@v3
-        with:
-          name: fibre-census-build-info
-          path: build-info.yaml
