@@ -20,7 +20,6 @@ lazy val `fibrecensus` = (project in file("."))
       
       ))
 
-//resolvers += "Akka Snapshot Repository" at "http://repo.akka.io/snapshots/"
 resolvers += "Akka library repository".at("https://repo.akka.io/maven")
       
 scalaVersion := "2.12.2"
