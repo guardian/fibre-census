@@ -38,6 +38,11 @@ var config = {
                 loader : 'babel-loader'
             },
             {
+                test : /\.[tj]sx?/,
+                include : APP_DIR,
+                loader : 'ts-loader'
+            },
+            {
                 test: /\.css$/,
                 use: ['style-loader', 'css-loader']
             }
