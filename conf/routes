@@ -15,5 +15,10 @@ POST    /api/hostinfo                   @controllers.HostInfoController.addRecor
 
 POST    /api/logins             @controllers.LoginHistoryController.updateLogins
 GET     /api/logins/:hostname   @controllers.LoginHistoryController.loginsFor(hostname,limit:Option[Int])
+POST    /api/logout                 @controllers.Login.logout
+GET     /api/isLoggedIn             @controllers.Login.isLoggedIn
+GET     /api/isAdmin                @controllers.Login.checkIsAdmin
+GET     /meta/oauth/config.json     @controllers.OAuthMetaController.oauthConfig
+GET     /meta/oauth/publickey.pem   @controllers.OAuthMetaController.signingKey
 + nocsrf
 DELETE  /api/delete/:hostname   @controllers.DeleteController.deleteFor(hostname)

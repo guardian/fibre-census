@@ -13,6 +13,9 @@
     "@babel/plugin-proposal-class-properties": "^7.3.0",
     "@babel/plugin-proposal-function-bind": "^7.2.0",
     "@babel/plugin-transform-react-jsx": "^7.3.0",
+    "@types/react": "^16.14.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/react-router-dom": "^5.1.5",
     "babel-core": "^7.0.0-bridge.0",
     "enzyme": "^3.7.0",
     "enzyme-adapter-react-16": "^1.6.0",
@@ -21,7 +24,9 @@
     "moxios": "^0.4.0",
     "object.entries": "^1.0.4",
     "react-test-renderer": "^16.6.1",
-    "sinon": "^2.3.7"
+    "sinon": "^2.3.7",
+    "ts-loader": "^9.4.3",
+    "typescript": "^4.2.3"
   },
   "dependencies": {
     "@babel/cli": "^7.23.0",
@@ -40,6 +45,7 @@
     "crypto-browserify": "^3.12.0",
     "css-loader": "^6.7.1",
     "identity-obj-proxy": "^3.0.0",
+    "jose": "^4.14.4",
     "lodash.omit": "^4.5.0",
     "moment": "^2.29.4",
     "moment-duration-format": "2.2.2",
@@ -53,6 +59,7 @@
     "react-tooltip": "^3.10.0",
     "stream-browserify": "^3.0.0",
     "style-loader": "^3.3.1",
+    "ts-interface-checker": "^0.2.1",
     "util": "^0.12.3",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.1.4",
