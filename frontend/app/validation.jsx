@@ -23,7 +23,7 @@ function validateMdcPing(mdcPing){
 
 function validateRecord(record){
     console.debug("validateRecord", record);
-    if(record.model!=="Mac Pro"){
+    if(record.model!=="Mac Pro" && record.model!=="Mac Studio"){
         return "unimportant";
     }
 
