@@ -49,8 +49,10 @@ function validateRecord(record){
         return "warning";
     }
 
-    if(!record.denyDlcVolumes) return "info";
-    if(record.denyDlcVolumes.length<mustHaveVolumes.length) return "info";
+    if(record.model!=="Mac Studio") {
+        if (!record.denyDlcVolumes) return "info";
+        if (record.denyDlcVolumes.length < mustHaveVolumes.length) return "info";
+    }
 
     const sanMountsNames = record.sanMounts.map(entry=>entry.name);
     if(sanMountsNames.length<mustHaveVolumes.length) return "info";
