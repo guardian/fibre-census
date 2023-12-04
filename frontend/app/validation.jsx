@@ -59,8 +59,9 @@ function validateRecord(record){
 
     if(!record.sanMounts) return "info";
 
-
-    if(mustHaveVolumes.filter(entry=>!record.denyDlcVolumes.includes(entry)).length>0) return "info";
+    if(record.model!=="Mac Studio") {
+        if (mustHaveVolumes.filter(entry => !record.denyDlcVolumes.includes(entry)).length > 0) return "info";
+    }
     return "normal";
 }
 
