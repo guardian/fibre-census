@@ -49,16 +49,19 @@ function validateRecord(record){
         return "warning";
     }
 
-    if(!record.denyDlcVolumes) return "info";
-    if(record.denyDlcVolumes.length<mustHaveVolumes.length) return "info";
+    if(record.model!=="Mac Studio") {
+        if (!record.denyDlcVolumes) return "info";
+        if (record.denyDlcVolumes.length < mustHaveVolumes.length) return "info";
+    }
 
     const sanMountsNames = record.sanMounts.map(entry=>entry.name);
     if(sanMountsNames.length<mustHaveVolumes.length) return "info";
 
     if(!record.sanMounts) return "info";
 
-
-    if(mustHaveVolumes.filter(entry=>!record.denyDlcVolumes.includes(entry)).length>0) return "info";
+    if(record.model!=="Mac Studio") {
+        if (mustHaveVolumes.filter(entry => !record.denyDlcVolumes.includes(entry)).length > 0) return "info";
+    }
     return "normal";
 }
 
