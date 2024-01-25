@@ -49,9 +49,9 @@ function validateRecord(record){
         return "warning";
     }
 
-    if(record.model!=="Mac Studio") {
+    if(record.model=="Mac Studio") {
         if (!record.denyDlcVolumes) return "info";
-        if (record.denyDlcVolumes.length < mustHaveVolumes.length) return "info";
+        if (record.denyDlcVolumes[0] != "false") return "info";
     }
 
     const sanMountsNames = record.sanMounts.map(entry=>entry.name);
@@ -59,9 +59,6 @@ function validateRecord(record){
 
     if(!record.sanMounts) return "info";
 
-    if(record.model!=="Mac Studio") {
-        if (mustHaveVolumes.filter(entry => !record.denyDlcVolumes.includes(entry)).length > 0) return "info";
-    }
     return "normal";
 }
 
