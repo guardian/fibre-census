@@ -144,13 +144,14 @@ sub getLoginHistory {
 
 sub checkDenyDlc {
     return [] if(! -f "/Library/Preferences/com.apple.xsan.plist");
-    my $xsanContent = `plutil -convert xml1 /Library/Preferences/com.apple.xsan.plist -o - | grep denyDLC -A 10`;
+    my $xsanContent = `plutil -convert xml1 /Library/Preferences/com.apple.xsan.plist -o - | grep useDLC -A 10`;
     return [] if($? != 0);   #text was not found
     my @result;
 
     foreach(split(/\n/, $xsanContent)){
-        push @result, $1 if(/^\s+<string>(.*)<\/string>/);
-        last if(/^\s+<\/array>/)
+        push @result, "false" if(/^\s+<false\/>/);
+        push @result, "true" if(/^\s+<true\/>/);
+        last if(/^\s+<\/dict>/)
     }
     return \@result;
 }

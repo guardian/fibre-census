@@ -1,9 +1,7 @@
 import ValidationComponent from "./ValidationComponent.jsx";
 
 const mustHaveVolumes = [
-    "Multimedia2",
-    "Proxies2",
-    "StudioPipe2"
+    "false"
 ];
 
 
@@ -16,7 +14,7 @@ class ValidateSanVolumes extends ValidationComponent {
         const matches = mustHaveVolumes.map(volName=>this.props.listData.includes(volName)).filter(hasEntry=>hasEntry);
 
         if(matches.length!==mustHaveVolumes.length){
-            this.setState({tooltip: "Expecting volumes " + mustHaveVolumes});
+            this.setState({tooltip: "Expecting this value to be false"});
             return "warning";
         }
         return "normal";
