@@ -201,8 +201,7 @@ class NewFrontPage extends React.Component {
                         <DisplayTextList title="Fibre status" listData={entry.fcStatus}/>
                         <DisplayTextList title="Fibre speed" listData={entry.fcSpeed}/>
                         <DisplayTextList title="LUN count" listData={entry.fcLunCount} validationComponent={<ValidateLunCount listData={entry.fcLunCount}/>}/>
-                        <DisplayTextList title="DenyDLC"
-                                         bulletIcon="hdd"
+                        <DisplayTextList title="UseDLC"
                                          listData={entry.denyDlcVolumes}
                                          validationComponent={<ValidateSanVolumes listData={entry.denyDlcVolumes}/>}
                         />
