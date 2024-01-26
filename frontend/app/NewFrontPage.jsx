@@ -19,6 +19,7 @@ import ProblemsFilter from "./ProblemsFilter.jsx";
 import SortSelector from "./SortSelector.jsx";
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import ValidateDLC from "./validation/ValidateDLC.jsx";
 
 class NewFrontPage extends React.Component {
     constructor(props){
@@ -203,7 +204,7 @@ class NewFrontPage extends React.Component {
                         <DisplayTextList title="LUN count" listData={entry.fcLunCount} validationComponent={<ValidateLunCount listData={entry.fcLunCount}/>}/>
                         <DisplayTextList title="UseDLC"
                                          listData={entry.denyDlcVolumes}
-                                         validationComponent={<ValidateSanVolumes listData={entry.denyDlcVolumes}/>}
+                                         validationComponent={<ValidateDLC listData={entry.denyDlcVolumes}/>}
                         />
                         <DisplaySimpleText title="Fibre adaptor model" entry={entry.fcAdaptor} extraClasses="wider"/>
                         <DisplayMdcPing title="MDC Controller Connectivity"
