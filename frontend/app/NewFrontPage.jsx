@@ -191,7 +191,7 @@ class NewFrontPage extends React.Component {
                                              extraClasses="oversized float-right"
                         />
                         <DisplaySimpleText title="Model" entry={entry.model} validationComponent={<ValidateModel stringData={entry.model}/>}/>
-                        <DisplaySimpleText title="Computer Name" entry={entry.computerName} extraClasses="wider"/>
+                        <DisplaySimpleText title="Computer Name" entry={entry.computerName} extraClasses="even-wider"/>
                         <DisplayTextList title="IP Addresses"
                                          bulletIcon="network-wired"
                                          listData={entry.ipAddresses}

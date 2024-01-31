@@ -260,3 +260,7 @@ ul.content-list {
     margin-left: auto;
     margin-right: 0.5em;
 }
+
+.even-wider {
+    width: 320px !important;
+}
