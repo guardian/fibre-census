@@ -264,3 +264,23 @@ ul.content-list {
 .even-wider {
     width: 320px !important;
 }
+
+.fibre {
+    width: 226px !important;
+}
+
+.model {
+    width: 114px !important;
+}
+
+.ip {
+    width: 170px !important;
+}
+
+.lun {
+    width: 130px !important;
+}
+
+.dlc {
+    width: 110px !important;
+}
