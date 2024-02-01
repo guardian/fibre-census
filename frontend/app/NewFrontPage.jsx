@@ -195,8 +195,8 @@ class NewFrontPage extends React.Component {
                         <DisplayTextList title="IP Addresses"
                                          bulletIcon="network-wired"
                                          listData={entry.ipAddresses}
-                                         validationComponent={<ValidateIpAddresses listData={entry.ipAddresses}
-                                         extraClasses="ip"/>}
+                                         validationComponent={<ValidateIpAddresses listData={entry.ipAddresses}/>}
+                                         extraClasses="ip"
                         />
                         <DisplayRecentUsers title="Recent Users" entry={entry} extraClasses="doublewidth"/>
                         <DisplayTextList title="Fibre WWNs" listData={entry.fcWWN} extraClasses="fibre" validationComponent={<ValidateFCWWN listData={entry.fcWWN}/>}/>
@@ -205,8 +205,8 @@ class NewFrontPage extends React.Component {
                         <DisplayTextList title="LUN count" listData={entry.fcLunCount} validationComponent={<ValidateLunCount listData={entry.fcLunCount}/>} extraClasses="lun"/>
                         <DisplayTextList title="UseDLC"
                                          listData={entry.denyDlcVolumes}
-                                         validationComponent={<ValidateDLC listData={entry.denyDlcVolumes}
-                                         extraClasses="dlc"/>}
+                                         validationComponent={<ValidateDLC listData={entry.denyDlcVolumes}/>}
+                                         extraClasses="dlc"
                         />
                         <DisplaySimpleText title="Fibre adaptor model" entry={entry.fcAdaptor} extraClasses="wider"/>
                         <DisplayMdcPing title="MDC Controller Connectivity"
