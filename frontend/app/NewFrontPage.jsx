@@ -190,21 +190,23 @@ class NewFrontPage extends React.Component {
                                              validationComponent={<ValidateFibreDrivers listData={entry.driverInfo}/>}
                                              extraClasses="oversized float-right"
                         />
-                        <DisplaySimpleText title="Model" entry={entry.model} validationComponent={<ValidateModel stringData={entry.model}/>}/>
-                        <DisplaySimpleText title="Computer Name" entry={entry.computerName} extraClasses="wider"/>
+                        <DisplaySimpleText title="Model" entry={entry.model} validationComponent={<ValidateModel stringData={entry.model}/>} extraClasses="model"/>
+                        <DisplaySimpleText title="Computer Name" entry={entry.computerName} extraClasses="even-wider"/>
                         <DisplayTextList title="IP Addresses"
                                          bulletIcon="network-wired"
                                          listData={entry.ipAddresses}
                                          validationComponent={<ValidateIpAddresses listData={entry.ipAddresses}/>}
+                                         extraClasses="ip"
                         />
                         <DisplayRecentUsers title="Recent Users" entry={entry} extraClasses="doublewidth"/>
-                        <DisplayTextList title="Fibre WWNs" listData={entry.fcWWN} extraClasses="wider" validationComponent={<ValidateFCWWN listData={entry.fcWWN}/>}/>
+                        <DisplayTextList title="Fibre WWNs" listData={entry.fcWWN} extraClasses="fibre" validationComponent={<ValidateFCWWN listData={entry.fcWWN}/>}/>
                         <DisplayTextList title="Fibre status" listData={entry.fcStatus}/>
                         <DisplayTextList title="Fibre speed" listData={entry.fcSpeed}/>
-                        <DisplayTextList title="LUN count" listData={entry.fcLunCount} validationComponent={<ValidateLunCount listData={entry.fcLunCount}/>}/>
+                        <DisplayTextList title="LUN count" listData={entry.fcLunCount} validationComponent={<ValidateLunCount listData={entry.fcLunCount}/>} extraClasses="lun"/>
                         <DisplayTextList title="UseDLC"
                                          listData={entry.denyDlcVolumes}
                                          validationComponent={<ValidateDLC listData={entry.denyDlcVolumes}/>}
+                                         extraClasses="dlc"
                         />
                         <DisplaySimpleText title="Fibre adaptor model" entry={entry.fcAdaptor} extraClasses="wider"/>
                         <DisplayMdcPing title="MDC Controller Connectivity"

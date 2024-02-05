@@ -255,7 +255,12 @@ sub pingMetaDataControllers {
   foreach(split(/\n/, $xsanNameServersConfigFile)){
       my $pingStatus;
       my $packetLoss;
-      my $pingResult = doPing($_);
+      my $iPAddress = $_;
+      if($iPAddress =~ /(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})/)
+      {
+        $iPAddress = $1;
+      }
+      my $pingResult = doPing($iPAddress);
       if (defined $pingResult) {
         $pingStatus = 'true';
         $packetLoss = '0';
@@ -263,7 +268,7 @@ sub pingMetaDataControllers {
         $pingStatus = 'false';
         my $pingResults = 0;
         for($pingCount=1;$pingCount<=10;++$pingCount) {
-          my $pingResultTwo = doPing($_);
+          my $pingResultTwo = doPing($iPAddress);
           if (defined $pingResultTwo) {
             $pingStatus = 'true';
           } else {
@@ -276,7 +281,7 @@ sub pingMetaDataControllers {
     if ($percentagePacketLoss != 0) {
       $percentagePacketLossForXML = $percentagePacketLoss;
     }
-    $data->{"$pingInt"}->{"ip"}="$_";
+    $data->{"$pingInt"}->{"ip"}="$iPAddress";
     $data->{"$pingInt"}->{"ping"}="$pingStatus";
     $data->{"$pingInt"}->{"packetloss"}="$percentagePacketLossForXML";
     $pingInt = $pingInt + 1;
