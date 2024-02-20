@@ -6,7 +6,7 @@ import io.circe.generic.auto
 
 import scala.xml.NodeSeq
 
-object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Option[Seq[MdcPing]], Option[Seq[SanMount]], ZonedDateTime)=>HostInfo,String,String) {
+object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Option[Seq[MdcPing]], Option[Seq[SanMount]], ZonedDateTime,String,String)=>HostInfo) {
   def fromXml(xml:NodeSeq, timestamp:ZonedDateTime):Either[Seq[String], HostInfo] = try {
     val fcInfos = if ((xml \ "fibrechannel").length==0){
       None
