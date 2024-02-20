@@ -295,6 +295,22 @@ sub pingMetaDataControllers {
   return $arrayOutput;
 }
 
+sub getPlutoHelperAgentVersion {
+    my $plutoHelperAgentInfo = `defaults read /Applications/PlutoHelperAgent.app/Contents/Info.plist | grep CFBundleVersion`;
+
+    foreach(split(/\n/,$plutoHelperAgentInfo)){
+        return $1 if(/^\s+CFBundleVersion = "(.*)..$/);
+    }
+}
+
+sub getPremiereProVersion {
+    my $premiereProInfo = `defaults read /Applications/Adobe\\ Premiere\\ Pro\\ 20*/Adobe\\ Premiere\\ Pro\\ 20*.app/Contents/Info.plist | grep "Adobe Product Version"`;
+
+    foreach(split(/\n/,$premiereProInfo)){
+        return $1 if(/^\s+"Adobe Product Version" = "(.*)..$/);
+    }
+}
+
 print "Run starting on $hostname at " . DateTime->now() . " UTC\n";
 print "--------------------------------------------\n";
 print "Collecting computer name...\n";
@@ -317,6 +333,10 @@ print "Collecting mount info...\n";
 my $mountInfo = checkMounts;
 print "Collecting ping info...\n";
 my $pingInfo = pingMetaDataControllers;
+print "Collecting Pluto Helper Agent info...\n";
+my $plutoHelperAgentInfo = getPlutoHelperAgentVersion;
+print "Collecting Premiere Pro info...\n";
+my $premiereProInfo = getPremiereProVersion;
 
 if($format eq "text"){
   print "Report for $hostname ($computerName)\n\n";
@@ -338,6 +358,10 @@ if($format eq "text"){
     print Dumper($mountInfo);
     print "Ping:\n";
     print Dumper($pingInfo);
+    print "Pluto Helper Agent info.:\n";
+    print Dumper($plutoHelperAgentInfo);
+    print "Premiere Pro info.:\n";
+    print Dumper($premiereProInfo);
 } elsif($format eq "xml"){
   my $data = {
     "hostname"=>$hostname,
@@ -351,6 +375,8 @@ if($format eq "text"){
       "XsandStatus"=>{"status"=>$xsandStatus},
       "sanVolumesVisible"=>{"mount"=>$mountInfo},
       "mdcConnectivity"=>{"mdc"=>$pingInfo},
+      "plutoHelperAgentInfo"=>$plutoHelperAgentInfo,
+      "premiereProInfo"=>$premiereProInfo,
   };
 
     my $content = XMLout($data,RootName=>"data", KeyAttr=>[ "model","hw_uuid","computerName","denyDlc"]);

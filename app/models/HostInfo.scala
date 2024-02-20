@@ -6,7 +6,7 @@ import io.circe.generic.auto
 
 import scala.xml.NodeSeq
 
-object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Option[Seq[MdcPing]], Option[Seq[SanMount]], ZonedDateTime)=>HostInfo) {
+object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Option[Seq[MdcPing]], Option[Seq[SanMount]], ZonedDateTime)=>HostInfo,String,String) {
   def fromXml(xml:NodeSeq, timestamp:ZonedDateTime):Either[Seq[String], HostInfo] = try {
     val fcInfos = if ((xml \ "fibrechannel").length==0){
       None
@@ -52,7 +52,9 @@ object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo
         driverInfo.map(_.collect({ case Right(info) => info })),
         Some(pingInfos.collect({ case Right(info) => info })),
         Some(mountInfos.collect({ case Right(info) => info })),
-        timestamp))
+        timestamp,
+        xml \@ "plutoHelperAgentInfo",
+        xml \@ "premiereProInfo"))
     }
   } catch {
     case ex:Throwable=>
@@ -62,4 +64,5 @@ object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo
 
 case class HostInfo(hostName:String, computerName:String, model:String, hwUUID:String, ipAddresses: List[String],
                     fibreChannel:Option[FCInfo], denyDlcVolumes:Option[Seq[String]], driverInfo:Option[Seq[DriverInfo]],
-                    mdcPing:Option[Seq[MdcPing]], sanMounts:Option[Seq[SanMount]], lastUpdate:ZonedDateTime)
+                    mdcPing:Option[Seq[MdcPing]], sanMounts:Option[Seq[SanMount]], lastUpdate:ZonedDateTime,
+                    plutoHelperAgentInfo:String, premiereProInfo:String)
