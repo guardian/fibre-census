@@ -21,7 +21,7 @@ class HostInfoSpec extends Specification {
       val doc = parser.document().docElem
       val t = ZonedDateTime.now()
       val result = HostInfo.fromXml(doc, t)
-      result must beRight(HostInfo("33212.gnm.int","33212_TV01_MMED_TEC_LOCADM_","something","fakeid",List("192.168.1.108","192.168.1.12","192.168.1.19"),None,None,None,Some(Seq()),Some(Seq()), t,"Build 24","15.4.3"))
+      result must beRight(HostInfo("33212.gnm.int","33212_TV01_MMED_TEC_LOCADM_","something","fakeid",List("192.168.1.108","192.168.1.12","192.168.1.19"),None,None,None,Some(Seq()),Some(Seq()), t,Some("Build 24"),Some("15.4.3")))
     }
 
     "convert an xml doc with fibrechannel info into a HostInfo model" in {
@@ -51,8 +51,8 @@ class HostInfoSpec extends Specification {
         Some(Seq()),
         Some(Seq()),
         t,
-        "Build 24",
-        "15.4.3"))
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
     "convert an xml doc with driver info into a HostInfo model" in {
@@ -94,8 +94,8 @@ class HostInfoSpec extends Specification {
         Some(Seq()),
         Some(Seq()),
         t,
-        "Build 24",
-        "15.4.3"))
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
     "convert an xml doc with mdc ping info into a HostInfo model" in {
@@ -129,8 +129,8 @@ class HostInfoSpec extends Specification {
         Some(Seq(MdcPing("192.168.22.4",0,true), MdcPing("192.168.23.5",0, true))),
         Some(Seq()),
         t,
-        "Build 24",
-        "15.4.3"))
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
     "convert an xml doc with SAN volumes info into a HostInfo model" in {
@@ -168,8 +168,8 @@ class HostInfoSpec extends Specification {
         Some(Seq(MdcPing("192.168.22.4",0,true), MdcPing("192.168.23.5",0, true))),
         Some(Seq(SanMount("/Volumes/SanVolume1","SanVolume1",1), SanMount("/Volumes/SanVolume2", "SanVolume2", 2))),
         t,
-        "Build 24",
-        "15.4.3"))
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
   }
