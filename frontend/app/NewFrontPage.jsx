@@ -221,8 +221,8 @@ class NewFrontPage extends React.Component {
                                          listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}
                                          validationComponent={<ValidateSanVolumes listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}/>}
                         />
-                        <DisplaySimpleText title="Pluto Helper Agent Version" entry={entry.plutoHelperAgentInfo}/>
-                        <DisplaySimpleText title="Premiere Pro Version" entry={entry.premiereProInfo}/>
+                        <DisplaySimpleText title="Pluto Helper Agent Version" entry={entry.plutoHelperAgentInfo} extraClasses="doublewidth"/>
+                        <DisplaySimpleText title="Premiere Pro Version" entry={entry.premiereProInfo} extraClasses="doublewidth"/>
                     </li> )
                 }
 
