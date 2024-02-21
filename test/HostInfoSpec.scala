@@ -11,7 +11,7 @@ class HostInfoSpec extends Specification {
   "HostInfo.fromXML" should {
     "convert an xml doc with no fibrechannel info into a HostInfo model" in {
       val sampleXml = """<?xml version="1.0" encoding="UTF-8"?>
-                        |<data model="something" hw_uuid="fakeid" computerName="33212_TV01_MMED_TEC_LOCADM_" hostname="33212.gnm.int">
+                        |<data model="something" hw_uuid="fakeid" computerName="33212_TV01_MMED_TEC_LOCADM_" hostname="33212.gnm.int" plutoHelperAgentInfo="Build 24" premiereProInfo="15.4.3">
                         |  <fibrechannel></fibrechannel>
                         |    <ipAddresses>192.168.1.108</ipAddresses>
                         |    <ipAddresses>192.168.1.12</ipAddresses>
@@ -21,12 +21,12 @@ class HostInfoSpec extends Specification {
       val doc = parser.document().docElem
       val t = ZonedDateTime.now()
       val result = HostInfo.fromXml(doc, t)
-      result must beRight(HostInfo("33212.gnm.int","33212_TV01_MMED_TEC_LOCADM_","something","fakeid",List("192.168.1.108","192.168.1.12","192.168.1.19"),None,None,None,Some(Seq()),Some(Seq()), t))
+      result must beRight(HostInfo("33212.gnm.int","33212_TV01_MMED_TEC_LOCADM_","something","fakeid",List("192.168.1.108","192.168.1.12","192.168.1.19"),None,None,None,Some(Seq()),Some(Seq()), t,Some("Build 24"),Some("15.4.3")))
     }
 
     "convert an xml doc with fibrechannel info into a HostInfo model" in {
       val sampleXml = """<?xml version="1.0"?>
-                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int">
+                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int" plutoHelperAgentInfo="Build 24" premiereProInfo="15.4.3">
                         |  <fibrechannel Product="ATTO ThunderLink FC 2082">
                         |    <Domain_0 WWN="10:00:00:10:86:04:09:AA" lunCount="0"/>
                         |    <Domain_1 Speed="Automatic (8 Gigabit)" Status="Link Established" WWN="24:70:00:C0:FF:1B:00:2C" lunCount="120"/>
@@ -50,12 +50,14 @@ class HostInfoSpec extends Specification {
         None,
         Some(Seq()),
         Some(Seq()),
-        t))
+        t,
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
     "convert an xml doc with driver info into a HostInfo model" in {
       val sampleXml = """<?xml version="1.0"?>
-                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int">
+                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int" plutoHelperAgentInfo="Build 24" premiereProInfo="15.4.3">
                         |  <fibrechannel Product="ATTO ThunderLink FC 2082">
                         |    <Domain_0 WWN="10:00:00:10:86:04:09:AA" lunCount="0"/>
                         |    <Domain_1 Speed="Automatic (8 Gigabit)" Status="Link Established" WWN="24:70:00:C0:FF:1B:00:2C" lunCount="120"/>
@@ -91,12 +93,14 @@ class HostInfoSpec extends Specification {
         )),
         Some(Seq()),
         Some(Seq()),
-        t))
+        t,
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
     "convert an xml doc with mdc ping info into a HostInfo model" in {
       val sampleXml = """<?xml version="1.0"?>
-                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int">
+                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int" plutoHelperAgentInfo="Build 24" premiereProInfo="15.4.3">
                         |  <fibrechannel Product="ATTO ThunderLink FC 2082">
                         |    <Domain_0 WWN="10:00:00:10:86:04:09:AA" lunCount="0"/>
                         |    <Domain_1 Speed="Automatic (8 Gigabit)" Status="Link Established" WWN="24:70:00:C0:FF:1B:00:2C" lunCount="120"/>
@@ -124,12 +128,14 @@ class HostInfoSpec extends Specification {
         None,
         Some(Seq(MdcPing("192.168.22.4",0,true), MdcPing("192.168.23.5",0, true))),
         Some(Seq()),
-        t))
+        t,
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
     "convert an xml doc with SAN volumes info into a HostInfo model" in {
       val sampleXml = """<?xml version="1.0"?>
-                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int">
+                        |<data model="something" hw_uuid="fakeid" computerName="32811_TV06_B300_K3_MMEDIA_1" hostname="32811.gnm.int" plutoHelperAgentInfo="Build 24" premiereProInfo="15.4.3">
                         |  <fibrechannel Product="ATTO ThunderLink FC 2082">
                         |    <Domain_0 WWN="10:00:00:10:86:04:09:AA" lunCount="0"/>
                         |    <Domain_1 Speed="Automatic (8 Gigabit)" Status="Link Established" WWN="24:70:00:C0:FF:1B:00:2C" lunCount="120"/>
@@ -161,7 +167,9 @@ class HostInfoSpec extends Specification {
         None,
         Some(Seq(MdcPing("192.168.22.4",0,true), MdcPing("192.168.23.5",0, true))),
         Some(Seq(SanMount("/Volumes/SanVolume1","SanVolume1",1), SanMount("/Volumes/SanVolume2", "SanVolume2", 2))),
-        t))
+        t,
+        Some("Build 24"),
+        Some("15.4.3")))
     }
 
   }
