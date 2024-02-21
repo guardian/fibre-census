@@ -6,7 +6,7 @@ import io.circe.generic.auto
 
 import scala.xml.NodeSeq
 
-object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Option[Seq[MdcPing]], Option[Seq[SanMount]], ZonedDateTime,String,String)=>HostInfo) {
+object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo], Option[Seq[String]],Option[Seq[DriverInfo]], Option[Seq[MdcPing]], Option[Seq[SanMount]], ZonedDateTime,Option[String],Option[String])=>HostInfo) {
   def fromXml(xml:NodeSeq, timestamp:ZonedDateTime):Either[Seq[String], HostInfo] = try {
     val fcInfos = if ((xml \ "fibrechannel").length==0){
       None
@@ -39,6 +39,18 @@ object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo
 
     val errors = pingInfos.collect({case Left(err)=>err}) ++ mountInfos.collect({case Left(err)=>err}) ++ driverInfo.getOrElse(Seq()).collect({case Left(err)=>err})
 
+    val plutoHelperAgentInfo = if((xml \ "plutoHelperAgentInfo").length==0){
+      None
+    } else {
+      Some(xml \@ "plutoHelperAgentInfo")
+    }
+
+    val premiereProInfo = if((xml \ "premiereProInfo").length==0){
+      None
+    } else {
+      Some(xml \@ "premiereProInfo")
+    }
+
     if(errors.nonEmpty){
       Left(errors)
     } else {
@@ -53,8 +65,8 @@ object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo
         Some(pingInfos.collect({ case Right(info) => info })),
         Some(mountInfos.collect({ case Right(info) => info })),
         timestamp,
-        xml \@ "plutoHelperAgentInfo",
-        xml \@ "premiereProInfo"))
+        plutoHelperAgentInfo,
+        premiereProInfo))
     }
   } catch {
     case ex:Throwable=>
@@ -65,4 +77,4 @@ object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo
 case class HostInfo(hostName:String, computerName:String, model:String, hwUUID:String, ipAddresses: List[String],
                     fibreChannel:Option[FCInfo], denyDlcVolumes:Option[Seq[String]], driverInfo:Option[Seq[DriverInfo]],
                     mdcPing:Option[Seq[MdcPing]], sanMounts:Option[Seq[SanMount]], lastUpdate:ZonedDateTime,
-                    plutoHelperAgentInfo:String, premiereProInfo:String)
+                    plutoHelperAgentInfo:Option[String], premiereProInfo:Option[String])
