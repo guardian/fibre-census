@@ -74,7 +74,9 @@ class NewFrontPage extends React.Component {
             "lastUpdate": rawData.lastUpdate,
             "denyDlcVolumes": rawData.denyDlcVolumes,
             "mdcPing": rawData.mdcPing,
-            "sanMounts": rawData.sanMounts
+            "sanMounts": rawData.sanMounts,
+            "plutoHelperAgentInfo": rawData.plutoHelperAgentInfo,
+            "premiereProInfo": rawData.premiereProInfo
         }, fcData);
 
         return Object.assign({
@@ -219,6 +221,8 @@ class NewFrontPage extends React.Component {
                                          listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}
                                          validationComponent={<ValidateSanVolumes listData={entry.sanMounts ? entry.sanMounts.map(m=>m.name) : null}/>}
                         />
+                        <DisplaySimpleText title="Pluto Helper Agent Version" entry={entry.plutoHelperAgentInfo}/>
+                        <DisplaySimpleText title="Premiere Pro Version" entry={entry.premiereProInfo}/>
                     </li> )
                 }
 
