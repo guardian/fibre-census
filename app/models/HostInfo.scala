@@ -39,13 +39,13 @@ object HostInfo extends ((String,String,String,String,List[String],Option[FCInfo
 
     val errors = pingInfos.collect({case Left(err)=>err}) ++ mountInfos.collect({case Left(err)=>err}) ++ driverInfo.getOrElse(Seq()).collect({case Left(err)=>err})
 
-    val plutoHelperAgentInfo = if((xml \ "plutoHelperAgentInfo").length==0){
+    val plutoHelperAgentInfo = if((xml \@ "plutoHelperAgentInfo").isEmpty){
       None
     } else {
       Some(xml \@ "plutoHelperAgentInfo")
     }
 
-    val premiereProInfo = if((xml \ "premiereProInfo").length==0){
+    val premiereProInfo = if((xml \@ "premiereProInfo").isEmpty){
       None
     } else {
       Some(xml \@ "premiereProInfo")
