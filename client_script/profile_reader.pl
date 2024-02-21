@@ -299,7 +299,7 @@ sub getPlutoHelperAgentVersion {
     my $plutoHelperAgentInfo = `defaults read /Applications/PlutoHelperAgent.app/Contents/Info.plist | grep CFBundleShortVersionString`;
 
     foreach(split(/\n/,$plutoHelperAgentInfo)){
-        return $1 if(/^\s+CFBundleVersion = "(.*)..$/);
+        return $1 if(/^\s+CFBundleShortVersionString = "(.*)..$/);
     }
 }
 
