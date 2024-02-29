@@ -7,16 +7,16 @@ const mustHaveVolumes = [
 function validateMdcPing(mdcPing){
     const visibleMdcList = mdcPing.filter(entry=>entry.visible);
     if(visibleMdcList.length===0){
-        return "warning";
+        return "problem";
     }
 
     if(visibleMdcList.length!==mdcPing.length){
-        return "info";
+        return "warning";
     }
 
     const highPacketCounts = mdcPing.filter(entry=>entry.packetloss>0);
     if(highPacketCounts.length>0){
-        return "info";
+        return "warning";
     }
     return "normal";
 }
@@ -34,10 +34,10 @@ function validateRecord(record){
 
     if(record.fcWWN.length<2){
         console.log(record.hostName + " has insufficient fibre interfaces");
-        return "warning";
+        return "problem";
     }
 
-    if(!record.mdcPing) return "info";
+    if(!record.mdcPing) return "warning";
     const mdcStatus = validateMdcPing(record.mdcPing);
     if(mdcStatus!=="normal") return mdcStatus;
 
@@ -46,18 +46,18 @@ function validateRecord(record){
 
     if(actualLunCount[0]!==20){
         console.log(record.hostName + " only has " + actualLunCount + " LUNs visible (expected 20)");
-        return "warning";
+        return "problem";
     }
 
     if(record.model=="Mac Studio") {
-        if (!record.denyDlcVolumes) return "info";
-        if (record.denyDlcVolumes[0] != "false") return "info";
+        if (!record.denyDlcVolumes) return "warning";
+        if (record.denyDlcVolumes[0] != "false") return "warning";
     }
 
     const sanMountsNames = record.sanMounts.map(entry=>entry.name);
-    if(sanMountsNames.length<mustHaveVolumes.length) return "info";
+    if(sanMountsNames.length<mustHaveVolumes.length) return "warning";
 
-    if(!record.sanMounts) return "info";
+    if(!record.sanMounts) return "warning";
 
     return "normal";
 }
