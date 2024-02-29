@@ -11,13 +11,13 @@ class ValidateSanVolumes extends ValidationComponent {
     performValidation() {
         if(!this.props.listData){
             this.setState({tooltip: "No data provided"});
-            return "warning";
+            return "problem";
         }
         const matches = mustHaveVolumes.map(volName=>this.props.listData.includes(volName)).filter(hasEntry=>hasEntry);
 
         if(matches.length!==mustHaveVolumes.length){
             this.setState({tooltip: "Expecting volumes " + mustHaveVolumes});
-            return "warning";
+            return "problem";
         }
         return "normal";
     }

@@ -4,12 +4,12 @@ class ValidateIpAddresses extends ValidationComponent {
     performValidation() {
         if(!this.props.listData){
             this.setState({"tooltip": "No network connections detected"});
-            return "warning";
+            return "problem";
         }
 
         if(this.props.listData.length<2){
             this.setState({"tooltip": "No metadata network"});
-            return "warning";
+            return "problem";
         }
         return "normal";
     }

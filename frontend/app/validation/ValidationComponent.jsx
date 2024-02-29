@@ -5,8 +5,8 @@ import ReactTooltip from 'react-tooltip';
 
 /**
  * unimportant - circle-minus
- * warning      - exclamation-triangle
- * info         - exclamation-circle
+ * problem      - exclamation-triangle
+ * warning         - exclamation-circle
  * normal       - nothing
  */
 class ValidationComponent extends React.Component {
@@ -48,9 +48,9 @@ class ValidationComponent extends React.Component {
     iconForStatus(){
         if(this.state.status==="unimportant"){
             return <FontAwesomeIcon icon="minus-circle" style={{color: "grey"}}/>
-        } else if(this.state.status==="warning"){
+        } else if(this.state.status==="problem"){
             return <FontAwesomeIcon icon="exclamation-triangle" style={{color: "red"}}/>
-        } else if(this.state.status==="info"){
+        } else if(this.state.status==="warning"){
             return <FontAwesomeIcon icon="exclamation-circle" style={{color: "yellow"}}/>
         } else {
             return <span/>
