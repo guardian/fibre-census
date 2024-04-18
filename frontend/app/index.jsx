@@ -3,13 +3,12 @@ import {render} from 'react-dom';
 import {BrowserRouter, Link, Route, Switch} from 'react-router-dom';
 import Raven from 'raven-js';
 import axios from 'axios';
-
+import { authenticatedFetch } from "./auth";
 import NotFoundComponent from './NotFoundComponent.jsx';
 import FrontPage from './FrontPage.jsx';
 import NewFrontPage from './NewFrontPage.jsx';
 import OAuthCallbackComponent from "./OAuthCallbackComponent.jsx";
 import LoginComponentNew from "./LoginComponentNew";
-
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHdd, faUserAlt, faMinusCircle, faExclamationCircle, faExclamationTriangle, faCheck, faCheckCircle, faNetworkWired, faTimesCircle } from '@fortawesome/free-solid-svg-icons'
@@ -184,7 +183,21 @@ class App extends React.Component {
                         />
                     )}
                 />
-                <Route path="/" exact={true} component={NewFrontPage}/>
+                <Route path="/" exact={true}
+                       component={() => (
+                           <NewFrontPage
+                               currentUsername={this.state.currentUsername}
+                               isLoggedIn={this.state.isLoggedIn}
+                               loginErrorDetail={this.state.loginDetail}
+                               isAdmin={this.state.isAdmin}
+                               oAuthUri={this.state.oAuthUri}
+                               tokenUri={this.state.tokenUri}
+                               clientId={this.state.clientId}
+                               scope={this.state.scope}
+                               resource={this.state.resource}
+                           />
+                       )}
+                />
                 <Route default component={NotFoundComponent}/>
             </Switch>
             <LoginComponentNew />

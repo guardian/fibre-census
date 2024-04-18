@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 
 /**
- * simple little loading indicator that puts a dot onto the end of the string every 1/10 second
+ * Simple little loading indicator that puts a dot onto the end of the string every 1/10 second
  */
 class LoadingIndicator extends React.Component {
   static propTypes = {

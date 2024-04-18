@@ -34,9 +34,9 @@ function validateAndDecode(token, signingKey, keyURL, refreshToken) {
   return new Promise((resolve, reject) => {
     try {
       const {payload, protectedHeader} = checkToken(token, keyURL);
-      window.localStorage.setItem("vaultdoor:access-token", token); //It validates so, save the token
+      window.localStorage.setItem("fibrecensus:access-token", token); //It validates so, save the token
       if (refreshToken)
-        window.localStorage.setItem("vaultdoor:refresh-token", refreshToken);
+        window.localStorage.setItem("fibrecensus:refresh-token", refreshToken);
       resolve(payload);
     } catch (err) {
       console.log("Token: ", token);
@@ -69,7 +69,7 @@ async function loadInSigningKey() {
  * @returns {string} the JWT, or null if it is not set.
  */
 function getRawToken() {
-  return window.localStorage.getItem("vaultdoor:access-token");
+  return window.localStorage.getItem("fibrecensus:access-token");
 }
 
 export { validateAndDecode, loadInSigningKey, getRawToken };

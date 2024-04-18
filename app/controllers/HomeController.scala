@@ -79,4 +79,7 @@ class HomeController @Inject()(cc: ControllerComponents, actorSystem:ActorSystem
     Ok("ok")
   }
 
+  def auth = Action {
+    Ok(views.html.index("Fibre Census")("string"))
+  }
 }

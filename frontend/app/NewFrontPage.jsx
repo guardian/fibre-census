@@ -20,8 +20,21 @@ import SortSelector from "./SortSelector.jsx";
 import moment from 'moment';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import ValidateDLC from "./validation/ValidateDLC.jsx";
+import PropTypes from "prop-types";
+import LoginButton from "./LoginButton.jsx";
 
 class NewFrontPage extends React.Component {
+    static propTypes = {
+        currentUsername: PropTypes.string,
+        isLoggedIn: PropTypes.bool.isRequired,
+        loginErrorDetail: PropTypes.string,
+        oAuthUri: PropTypes.string.isRequired,
+        tokenUri: PropTypes.string.isRequired,
+        clientId: PropTypes.string.isRequired,
+        resource: PropTypes.string.isRequired,
+        scope: PropTypes.string.isRequired,
+    };
+
     constructor(props){
         super(props);
         this.state = {
@@ -41,9 +54,13 @@ class NewFrontPage extends React.Component {
         };
         this.updateSearchTerms = this.updateSearchTerms.bind(this);
         this.sortUpdated = this.sortUpdated.bind(this);
+        const currentUri = new URL(window.location.href);
+        this.redirectUri =
+            currentUri.protocol + "//" + currentUri.host + "/oauth2/callback";
     }
 
     componentWillMount(){
+        console.log(this.redirectUri);
         this.refresh();
     }
 
@@ -165,8 +182,10 @@ class NewFrontPage extends React.Component {
         )
     }
 
-    render(){
-        return <div>
+    render() {
+        if (this.props.isLoggedIn) {
+            return (
+        <div>
             <h1>Fibre Census</h1>
 
             <div className="centered">
@@ -229,6 +248,26 @@ class NewFrontPage extends React.Component {
             </ul>
             <ReactTooltip/>
         </div>
+            );
+        } else {
+            return (
+                <div>
+                    {this.props.loginErrorDetail ? (
+                        <p className="error">{this.props.loginErrorDetail}</p>
+                    ) : null}
+                    Click here to log in to Fibre Census:{" "}
+                    <LoginButton
+                        oAuthUri={this.props.oAuthUri}
+                        tokenUri={this.props.tokenUri}
+                        clientId={this.props.clientId}
+                        redirectUri={this.redirectUri}
+                        resource={this.props.resource}
+                        state={this.props.redirectingTo}
+                        scope={this.props.scope}
+                    />
+                </div>
+            );
+        }
     }
 }
 
