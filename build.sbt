@@ -40,7 +40,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser" % circeVersion,
   "io.circe" %% "circe-java8" % circeVersion,
   "com.dripower" %% "play-circe" % "2610.0",
-  "com.nimbusds" % "nimbus-jose-jwt" % "8.21.1"
+  "com.nimbusds" % "nimbus-jose-jwt" % "9.37.2"
 )
 
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
