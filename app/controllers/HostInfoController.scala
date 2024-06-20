@@ -74,8 +74,9 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
 
     q match {
       case Some(searchTerms) =>
+        val searchString = s"*$searchTerms*"
         val responseFuture = cli.execute {
-          search(indexName) query searchTerms from actualStart size actualLength
+          search(indexName) query searchString from actualStart size actualLength
         }
 
         responseFuture.map({
