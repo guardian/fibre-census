@@ -2,7 +2,7 @@ import ValidationComponent from "./ValidationComponent.jsx";
 
 class ValidateModel extends ValidationComponent {
     performValidation() {
-        if(this.props.stringData==="Mac Pro"){
+        if((this.props.stringData==="Mac Pro") || (this.props.stringData==="Mac Studio")){
             this.setState({"tooltip": ""});
             return "normal";
         } else {
