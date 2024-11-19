@@ -14,7 +14,7 @@ lazy val `fibrecensus` = (project in file("."))
       dockerRepository := Some("guardianmultimedia"),
       packageName in Docker := "guardianmultimedia/fibrecensus",
       packageName := "fibrecensus",
-      dockerBaseImage := "openjdk:8-jdk-alpine",
+      dockerBaseImage := "gcr.io/distroless/java:8",
       dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV"))),
       dockerCommands ++= Seq(
       
