@@ -78,7 +78,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
     }
 
     if (entry.ipAddresses.length < 2){
-      logger.info(s"${entry.hostName} has no metadata network")
+      logger.debug(s"${entry.hostName} has no metadata network")
       return "unimportant"
     }
 
@@ -86,7 +86,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
       val fcWWM = entry.fibreChannel.get.domains.map(dom=>dom.portWWN)
 
       if (fcWWM.length < 2) {
-        logger.info(s"${entry.hostName} has insufficient fibre interfaces")
+        logger.debug(s"${entry.hostName} has insufficient fibre interfaces")
         return "problem"
       }
     } else {
@@ -105,7 +105,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
       logger.debug(s"actualLUNCount is: ${actualLUNCount}")
 
       if(!(actualLUNCount.head > 19)){
-        logger.info(s"${entry.hostName} only has $actualLUNCount LUNs visible (expected at least 20)")
+        logger.debug(s"${entry.hostName} only has $actualLUNCount LUNs visible (expected at least 20)")
         return "problem"
       }
     }
@@ -145,7 +145,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
       case Right(entry)=>
         val idToUse = s"${entry.hostName}"
         val entryStatus = validateRecord(entry)
-        logger.info(s"Entry status is ${entryStatus}")
+        logger.debug(s"Entry status is ${entryStatus}")
         client.execute {
             update(idToUse).in(s"$indexName/entry").docAsUpsert(entry)
         }.map({
@@ -155,23 +155,15 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
               search(s"$indexName/entry").query(idsQuery(idToUse))
             }.map({
               case Left(failure) =>
-                logger.debug( s"Could not set load record.")
+                logger.debug( s"Could not load record.")
               case Right(output) =>
                 val response = output.body
-                logger.debug( s"$response")
                 val responseObject = Json.parse(response.get)
-
-                logger.debug( s"$responseObject")
-
                 val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
-
                 val oldStatus = oldStatusResult.get.toString().replace("\"", "")
-
                 logger.debug( s"Old status: $oldStatus")
-
                 if (isTriggerStatus(oldStatus, entryStatus)) {
-                  logger.debug( s"About to attempt to send an e-mail")
-                  logger.debug( s"E-mail address to send to: ${playConfig.get[String]("mail.recipient_address")}")
+                  logger.debug( s"About to attempt to send an e-mail to: ${playConfig.get[String]("mail.recipient_address")}")
                   try {
                     val email = Email( playConfig.get[String]("mail.subject"), s"${playConfig.get[String]("mail.sender_name")} <${playConfig.get[String]("mail.sender_address")}>", Seq(s"${playConfig.get[String]("mail.recipient_name")} <${playConfig.get[String]("mail.recipient_address")}>"), bodyText = Some(s"The machine ${entry.hostName} has entered the status of '${entryStatus}'."))
                     mailerClient.send(email)
@@ -180,7 +172,6 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
                   }
                 }
             })
-
             client.execute {
               update(idToUse).in(s"$indexName/entry").docAsUpsert (
                 "status" -> entryStatus
