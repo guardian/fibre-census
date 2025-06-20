@@ -43,6 +43,9 @@ libraryDependencies ++= Seq(
   "com.nimbusds" % "nimbus-jose-jwt" % "9.37.2"
 )
 
+libraryDependencies += "com.typesafe.play" %% "play-mailer" % "8.0.1"
+libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "8.0.1"
+
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
 
 enablePlugins(DockerPlugin, AshScriptPlugin)
