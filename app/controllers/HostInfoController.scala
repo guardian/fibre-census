@@ -104,10 +104,15 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
 
       logger.debug(s"actualLUNCount is: ${actualLUNCount}")
 
-      if(!(actualLUNCount.head > 19)){
-        logger.debug(s"${entry.hostName} only has $actualLUNCount LUNs visible (expected at least 20)")
+      if (actualLUNCount.length > 0) {
+        if(!(actualLUNCount.head > 19)){
+          logger.debug(s"${entry.hostName} only has $actualLUNCount LUNs visible (expected at least 20)")
+          return "problem"
+        }
+      } else {
         return "problem"
       }
+
     }
 
     if (entry.model == "Mac Studio") {
