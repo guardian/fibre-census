@@ -117,7 +117,11 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
 
     if (entry.model == "Mac Studio") {
       if (!entry.denyDlcVolumes.isEmpty) {
-        if (entry.denyDlcVolumes.get.head != "false") return "warning"
+        if (entry.denyDlcVolumes.get.length > 0) {
+          if (entry.denyDlcVolumes.get.head != "false") return "warning"
+        } else {
+          return "warning"
+        }
       } else {
         return "warning"
       }
