@@ -25,15 +25,13 @@ object MailLauncher {
     implicit val injector = app.injector
     val mailSender = injector.instanceOf(classOf[MailSender])
 
-    mailSender.sendMail()
-
     mailSender.sendMail().onComplete({
 
       case Success(r) =>
 
         System.exit(0)
       case Failure(exception) =>
-        logger.error(s"ERROR - Could not complete backup: ${exception.getMessage}")
+        logger.error(s"ERROR - Could not send e-mail: ${exception.getMessage}")
         System.exit(1)
 
     })

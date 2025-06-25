@@ -33,7 +33,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
     logger.info(s"Mail sender run")
 
     client.execute {
-      search(s"$indexName").query("q=*:*&size=1000")
+      search(s"$indexName").query("*").size(1000)
     }.map({
       case Left(failure) =>
         logger.debug( s"Could not load records.")
