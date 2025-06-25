@@ -20,9 +20,15 @@ object MailLauncher {
   def main(args:Array[String]):Unit = {
     val app = new GuiceApplicationBuilder()
       .build()
+    logger.info(s"Mail launcher run.")
     implicit val injector = app.injector
+    val mailSender = injector.instanceOf(classOf[MailSender])
 
     logger.info(s"Mail launcher run.")
+
+    mailSender.sendMail()
+
+    System.exit(0)
 
 
 
