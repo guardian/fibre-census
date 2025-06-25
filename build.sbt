@@ -50,4 +50,4 @@ libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
 
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
 
-enablePlugins(DockerPlugin, AshScriptPlugin)
+enablePlugins(DockerPlugin)
