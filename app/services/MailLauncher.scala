@@ -4,6 +4,7 @@ import org.slf4j.LoggerFactory
 import play.api.inject.guice.GuiceApplicationBuilder
 import scopt.OptionParser
 import scala.util.{Failure, Success}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object MailLauncher {
   private val logger = LoggerFactory.getLogger(getClass)
@@ -24,11 +25,21 @@ object MailLauncher {
     implicit val injector = app.injector
     val mailSender = injector.instanceOf(classOf[MailSender])
 
-    logger.info(s"Mail launcher run.")
-
     mailSender.sendMail()
 
-    System.exit(0)
+    mailSender.sendMail().onComplete({
+
+      case Success(r) =>
+
+        System.exit(0)
+      case Failure(exception) =>
+        logger.error(s"ERROR - Could not complete backup: ${exception.getMessage}")
+        System.exit(1)
+
+    })
+
+
+
 
 
 

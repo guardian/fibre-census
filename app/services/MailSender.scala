@@ -27,8 +27,10 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
 
 
 
-  def sendMail():Unit = {
+  def sendMail():Future[Unit] = {
     val client = esClientMgr.getClient()
+
+    logger.info(s"Mail sender run")
 
     client.execute {
       search(s"$indexName").query("size=1000")
