@@ -17,6 +17,7 @@ lazy val `fibrecensus` = (project in file("."))
       dockerBaseImage := "amazoncorretto:8-alpine3.18-full",
       dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV"))),
       dockerCommands ++= Seq(
+        Cmd("USER", "root"),
         Cmd("RUN", "apk", "add", "--no-cache", "bash"),
       ))
 
