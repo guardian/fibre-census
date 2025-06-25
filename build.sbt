@@ -42,7 +42,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-java8" % circeVersion,
   "com.dripower" %% "play-circe" % "2610.0",
   "com.nimbusds" % "nimbus-jose-jwt" % "9.37.2",
-  "com.github.scopt" %% "scopt" % "4.0.1"
+  "com.github.scopt" %% "scopt" % "4.1.0"
 )
 
 libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.1"
