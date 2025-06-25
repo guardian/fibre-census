@@ -17,7 +17,7 @@ lazy val `fibrecensus` = (project in file("."))
       dockerBaseImage := "amazoncorretto:8-alpine3.18-full",
       dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV"))),
       dockerCommands ++= Seq(
-      
+        Cmd("RUN", "apk", "add", "--no-cache", "bash"),
       ))
 
 resolvers += "Akka library repository".at("https://repo.akka.io/maven")
