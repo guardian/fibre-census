@@ -50,6 +50,20 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
 
         for (record <- hitList) {
           logger.debug(record.toString())
+          try {
+            val hostNameObject = (record \ "_source" \ "hostName")
+            val hostName = hostNameObject.get.toString()
+            logger.debug(s"Host name: $hostName")
+          } catch {
+            case e:Exception => logger.debug(s"Could not get host name.")
+          }
+          try {
+            val statusObject = (record \ "_source" \ "status")
+            val status = statusObject.get.toString()
+            logger.debug(s"Status: $status")
+          } catch {
+            case e:Exception => logger.debug(s"Could not get status.")
+          }
         }
     })
   }
