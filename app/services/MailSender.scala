@@ -38,6 +38,8 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
       case Left(failure) =>
         logger.debug( s"Could not load records.")
       case Right(output) =>
+        var warningHosts: Array[String] = new Array[String](0)
+        var problemHosts: Array[String] = new Array[String](0)
         val response = output.body
         val responseObject = Json.parse(response.get)
         //val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
@@ -48,23 +50,36 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
         logger.debug( s"$hitsObject")
         val hitList = hitsObject.as[List[JsValue]]
 
+        var status = ""
+        var hostName = ""
+
         for (record <- hitList) {
           logger.debug(record.toString())
           try {
             val hostNameObject = (record \ "_source" \ "hostName")
-            val hostName = hostNameObject.get.toString()
+            hostName = hostNameObject.get.toString().replace("\"", "")
             logger.debug(s"Host name: $hostName")
           } catch {
             case e:Exception => logger.debug(s"Could not get host name.")
           }
           try {
             val statusObject = (record \ "_source" \ "status")
-            val status = statusObject.get.toString()
+            status = statusObject.get.toString().replace("\"", "")
             logger.debug(s"Status: $status")
           } catch {
             case e:Exception => logger.debug(s"Could not get status.")
           }
+
+          if (status == "warning") {
+            warningHosts = warningHosts :+ hostName
+          }
+          if (status == "problem") {
+            problemHosts = problemHosts :+ hostName
+          }
         }
+
+        logger.debug(s"Warning hosts: $warningHosts")
+        logger.debug(s"Problem hosts: $problemHosts")
     })
   }
 }
