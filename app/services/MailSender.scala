@@ -46,10 +46,10 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
         val hitsResult = (responseObject \ "hits" \ "hits")
         val hitsObject = hitsResult.get
         logger.debug( s"$hitsObject")
-        val hitList = hitsObject.as[List[String]]
+        val hitList = hitsObject.as[List[JsValue]]
 
         for (record <- hitList) {
-          logger.debug(record)
+          logger.debug(record.toString())
         }
     })
   }
