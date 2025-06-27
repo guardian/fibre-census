@@ -17,7 +17,8 @@ lazy val `fibrecensus` = (project in file("."))
       dockerBaseImage := "amazoncorretto:8-alpine3.18-full",
       dockerAlias := docker.DockerAlias(None,Some("guardianmultimedia"),"fibrecensus",Some(sys.props.getOrElse("build.number","DEV"))),
       dockerCommands ++= Seq(
-      
+        Cmd("USER", "root"),
+        Cmd("RUN", "apk", "add", "--no-cache", "bash"),
       ))
 
 resolvers += "Akka library repository".at("https://repo.akka.io/maven")
@@ -40,7 +41,8 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-parser" % circeVersion,
   "io.circe" %% "circe-java8" % circeVersion,
   "com.dripower" %% "play-circe" % "2610.0",
-  "com.nimbusds" % "nimbus-jose-jwt" % "9.37.2"
+  "com.nimbusds" % "nimbus-jose-jwt" % "9.37.2",
+  "com.github.scopt" %% "scopt" % "4.1.0"
 )
 
 libraryDependencies += "com.typesafe.play" %% "play-mailer" % "6.0.1"
@@ -48,4 +50,4 @@ libraryDependencies += "com.typesafe.play" %% "play-mailer-guice" % "6.0.1"
 
 unmanagedResourceDirectories in Test +=  { baseDirectory ( _ /"target/web/public/test" ).value }
 
-enablePlugins(DockerPlugin, AshScriptPlugin)
+enablePlugins(DockerPlugin)
