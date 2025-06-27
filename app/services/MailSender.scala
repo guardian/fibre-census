@@ -74,6 +74,14 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
 
         logger.debug(s"Warning hosts: ${warningHosts.mkString("Array(", ", ", ")")}")
         logger.debug(s"Problem hosts: ${problemHosts.mkString("Array(", ", ", ")")}")
+        logger.debug(s"Warning hosts: - ")
+        for (hostNameString <- warningHosts) {
+          logger.debug(hostNameString)
+        }
+        logger.debug(s"Problem hosts: - ")
+        for (hostNameString <- problemHosts) {
+          logger.debug(hostNameString)
+        }
     })
   }
 }
