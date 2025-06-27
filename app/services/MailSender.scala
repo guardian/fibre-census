@@ -23,10 +23,6 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
 
   protected val indexName = playConfig.get[String]("elasticsearch.indexName")
 
-
-
-
-
   def sendMail():Future[Unit] = {
     val client = esClientMgr.getClient()
 
@@ -42,8 +38,6 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
         var problemHosts: Array[String] = new Array[String](0)
         val response = output.body
         val responseObject = Json.parse(response.get)
-        //val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
-        //val oldStatus = oldStatusResult.get.toString().replace("\"", "")
         logger.debug( s"$responseObject")
         val hitsResult = (responseObject \ "hits" \ "hits")
         val hitsObject = hitsResult.get
@@ -78,8 +72,8 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
           }
         }
 
-        logger.debug(s"Warning hosts: $warningHosts")
-        logger.debug(s"Problem hosts: $problemHosts")
+        logger.debug(s"Warning hosts: ${warningHosts.toString}")
+        logger.debug(s"Problem hosts: ${problemHosts.toString}")
     })
   }
 }
