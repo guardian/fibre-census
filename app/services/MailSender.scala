@@ -1,24 +1,17 @@
 package services
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Keep, Sink}
 import helpers.ESClientManager
 import org.slf4j.LoggerFactory
 import play.api.Configuration
-import play.api.inject.Injector
-
-import java.sql.Timestamp
-import java.time.{Duration, Instant}
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
-import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.json.{JsValue, Json}
 import play.api.libs.mailer._
 
 @Singleton
 class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager)
-                          (implicit mat:Materializer, injector: Injector, mailerClient: MailerClient){
+                          (implicit mailerClient: MailerClient){
   private val logger = LoggerFactory.getLogger(getClass)
   import com.sksamuel.elastic4s.http.ElasticDsl._
 
