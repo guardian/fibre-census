@@ -88,19 +88,19 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
           var mailBody = s""
 
           if (problemHosts.length > 0) {
-            mailBody = mailBody + s"\\r\\n The following machines have the status 'problem': -"
+            mailBody = mailBody + s"\n The following machines have the status 'problem': -"
             for (hostNameString <- problemHosts) {
-              mailBody = mailBody + s"\\r\\n $hostNameString"
+              mailBody = mailBody + s"\n $hostNameString"
             }
-            mailBody = mailBody + s"\\r\\n"
+            mailBody = mailBody + s"\n"
           }
 
           if (warningHosts.length > 0) {
-            mailBody = mailBody + s"\\r\\n The following machines have the status 'warning': -"
+            mailBody = mailBody + s"\n The following machines have the status 'warning': -"
             for (hostNameString <- warningHosts) {
-              mailBody = mailBody + s"\\r\\n $hostNameString"
+              mailBody = mailBody + s"\n $hostNameString"
             }
-            mailBody = mailBody + s"\\r\\n"
+            mailBody = mailBody + s"\n"
           }
 
           logger.info( s"About to attempt to send an e-mail to: ${playConfig.get[String]("mail.recipient_address")}")
