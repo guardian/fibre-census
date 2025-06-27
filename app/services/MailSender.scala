@@ -14,10 +14,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.libs.mailer._
 
 @Singleton
 class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager)
-                          (implicit mat:Materializer, injector: Injector){
+                          (implicit mat:Materializer, injector: Injector, mailerClient: MailerClient){
   private val logger = LoggerFactory.getLogger(getClass)
   import com.sksamuel.elastic4s.http.ElasticDsl._
 
@@ -81,6 +82,34 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
         logger.debug(s"Problem hosts: - ")
         for (hostNameString <- problemHosts) {
           logger.debug(hostNameString)
+        }
+
+        if ((warningHosts.length > 0) || (problemHosts.length > 0)) {
+          var mailBody = s""
+
+          if (problemHosts.length > 0) {
+            mailBody = mailBody + s"\\n The following machines have the status 'problem': -"
+            for (hostNameString <- problemHosts) {
+              mailBody = mailBody + s"\\n $hostNameString"
+            }
+            mailBody = mailBody + s"\\n"
+          }
+
+          if (warningHosts.length > 0) {
+            mailBody = mailBody + s"\\n The following machines have the status 'warning': -"
+            for (hostNameString <- warningHosts) {
+              mailBody = mailBody + s"\\n $hostNameString"
+            }
+            mailBody = mailBody + s"\\n"
+          }
+
+          logger.info( s"About to attempt to send an e-mail to: ${playConfig.get[String]("mail.recipient_address")}")
+          try {
+            val email = Email( playConfig.get[String]("mail.summary_subject"), s"${playConfig.get[String]("mail.sender_name")} <${playConfig.get[String]("mail.sender_address")}>", Seq(s"${playConfig.get[String]("mail.recipient_name")} <${playConfig.get[String]("mail.recipient_address")}>"), bodyText = Some(mailBody))
+            mailerClient.send(email)
+          } catch {
+            case e: Exception => logger.error(s"Sending e-mail failed with error: $e")
+          }
         }
     })
   }
