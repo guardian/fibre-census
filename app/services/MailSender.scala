@@ -64,11 +64,11 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
 
           if (status == "warning") {
             warningHosts = warningHosts :+ hostName
-            warningData = warningData :+ sourceObject.get.toString()
+            warningData = warningData :+ sourceObject.get.toString().replace("JsDefined(", "").dropRight(1)
           }
           if (status == "problem") {
             problemHosts = problemHosts :+ hostName
-            problemData = problemData :+ sourceObject.get.toString()
+            problemData = problemData :+ sourceObject.get.toString().replace("JsDefined(", "").dropRight(1)
           }
         }
 
