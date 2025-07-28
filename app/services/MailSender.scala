@@ -30,6 +30,8 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
       case Right(output) =>
         var warningHosts: Array[String] = new Array[String](0)
         var problemHosts: Array[String] = new Array[String](0)
+        var warningData: Array[String] = new Array[String](0)
+        var problemData: Array[String] = new Array[String](0)
         val response = output.body
         val responseObject = Json.parse(response.get)
         logger.debug( s"$responseObject")
@@ -58,11 +60,15 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
             case e:Exception => logger.debug(s"Could not get status.")
           }
 
+          val sourceObject = (record \ "_source")
+
           if (status == "warning") {
             warningHosts = warningHosts :+ hostName
+            warningData = warningData :+ sourceObject.toString
           }
           if (status == "problem") {
             problemHosts = problemHosts :+ hostName
+            problemData = problemData :+ sourceObject.toString
           }
         }
 
@@ -82,8 +88,11 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
 
           if (problemHosts.length > 0) {
             mailBody = mailBody + s"<br /> <div style='color: #ff0000;'>The following machines have the status 'problem': -</div>"
+            var problemPlace = 0
             for (hostNameString <- problemHosts) {
+              logger.debug(problemData(problemPlace))
               mailBody = mailBody + s"$hostNameString <br />"
+              problemPlace = problemPlace + 1
             }
           }
 
