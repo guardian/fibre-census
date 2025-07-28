@@ -78,27 +78,29 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
         }
 
         if ((warningHosts.length > 0) || (problemHosts.length > 0)) {
-          var mailBody = s""
+          var mailBody = s"<html><body>"
 
           if (problemHosts.length > 0) {
-            mailBody = mailBody + s"\n The following machines have the status 'problem': -"
+            mailBody = mailBody + s"<br /> <div style='color: #ff0000;'>The following machines have the status 'problem': -</div>"
             for (hostNameString <- problemHosts) {
-              mailBody = mailBody + s"\n $hostNameString"
+              mailBody = mailBody + s"<br /> $hostNameString"
             }
-            mailBody = mailBody + s"\n"
+            mailBody = mailBody + s"<br />"
           }
 
           if (warningHosts.length > 0) {
-            mailBody = mailBody + s"\n The following machines have the status 'warning': -"
+            mailBody = mailBody + s"<br /> <div style='color: #ff9000;'>The following machines have the status 'warning': -</div>"
             for (hostNameString <- warningHosts) {
-              mailBody = mailBody + s"\n $hostNameString"
+              mailBody = mailBody + s"<br /> $hostNameString"
             }
-            mailBody = mailBody + s"\n"
+            mailBody = mailBody + s"<br />"
           }
+
+          mailBody = mailBody + s"</body></html>"
 
           logger.info( s"About to attempt to send an e-mail to: ${playConfig.get[String]("mail.recipient_address")}")
           try {
-            val email = Email( playConfig.get[String]("mail.summary_subject"), s"${playConfig.get[String]("mail.sender_name")} <${playConfig.get[String]("mail.sender_address")}>", Seq(s"${playConfig.get[String]("mail.recipient_name")} <${playConfig.get[String]("mail.recipient_address")}>"), bodyText = Some(mailBody))
+            val email = Email( playConfig.get[String]("mail.summary_subject"), s"${playConfig.get[String]("mail.sender_name")} <${playConfig.get[String]("mail.sender_address")}>", Seq(s"${playConfig.get[String]("mail.recipient_name")} <${playConfig.get[String]("mail.recipient_address")}>"), bodyHtml = Some(mailBody))
             mailerClient.send(email)
           } catch {
             case e: Exception => logger.error(s"Sending e-mail failed with error: $e")
