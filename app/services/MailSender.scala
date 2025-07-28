@@ -83,17 +83,15 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
           if (problemHosts.length > 0) {
             mailBody = mailBody + s"<br /> <div style='color: #ff0000;'>The following machines have the status 'problem': -</div>"
             for (hostNameString <- problemHosts) {
-              mailBody = mailBody + s"<br /> $hostNameString"
+              mailBody = mailBody + s"$hostNameString <br />"
             }
-            mailBody = mailBody + s"<br />"
           }
 
           if (warningHosts.length > 0) {
             mailBody = mailBody + s"<br /> <div style='color: #ff9000;'>The following machines have the status 'warning': -</div>"
             for (hostNameString <- warningHosts) {
-              mailBody = mailBody + s"<br /> $hostNameString"
+              mailBody = mailBody + s"$hostNameString <br />"
             }
-            mailBody = mailBody + s"<br />"
           }
 
           mailBody = mailBody + s"</body></html>"
