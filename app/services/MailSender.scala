@@ -97,7 +97,19 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               val responseObjectTwo = Json.parse(problemData(problemPlace))
               val lUNZero = (responseObjectTwo \ "fibreChannel" \ "domains" \ 0 \ "lunCount")
               val lUNOne = (responseObjectTwo \ "fibreChannel" \ "domains" \ 1 \ "lunCount")
-              val lUNTotal = lUNZero.get.toString().toInt + lUNOne.get.toString().toInt
+              var lUNTotal = 0
+              try {
+                lUNTotal = lUNZero.get.toString().toInt
+              } catch {
+                case e:Exception =>
+                  logger.debug(s"Could not get zeroth LUN reading.")
+              }
+              try {
+                lUNTotal = lUNTotal + lUNOne.get.toString().toInt
+              } catch {
+                case e:Exception =>
+                  logger.debug(s"Could not get first LUN reading.")
+              }
               if (lUNTotal < 20) {
                 mailBody = mailBody + s"<div style='float: left;'>&nbsp;LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal</div>"
               }
