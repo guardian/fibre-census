@@ -93,13 +93,13 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
             var problemPlace = 0
             for (hostNameString <- problemHosts) {
               logger.debug(problemData(problemPlace))
-              mailBody = mailBody + s"$hostNameString <br />"
+              mailBody = mailBody + s"<div style='float: left;'>$hostNameString</div>"
               val responseObjectTwo = Json.parse(problemData(problemPlace))
               val lUNZero = (responseObjectTwo \ "fibreChannel" \ "domains" \ 0 \ "lunCount")
               val lUNOne = (responseObjectTwo \ "fibreChannel" \ "domains" \ 1 \ "lunCount")
               val lUNTotal = lUNZero.get.toString().toInt + lUNOne.get.toString().toInt
               if (lUNTotal < 20) {
-                mailBody = mailBody + s" LUN count: <div style='color: #ff0000;'>$lUNTotal</div>"
+                mailBody = mailBody + s" <div style='float: left;'>LUN count: </div> <div style='float: left; color: #ff0000;'>$lUNTotal</div>"
               }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
