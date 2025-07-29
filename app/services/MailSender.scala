@@ -99,7 +99,13 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               val lUNOne = (responseObjectTwo \ "fibreChannel" \ "domains" \ 1 \ "lunCount")
               val lUNTotal = lUNZero.get.toString().toInt + lUNOne.get.toString().toInt
               if (lUNTotal < 20) {
-                mailBody = mailBody + s" <div style='float: left;'>LUN count: </div> <div style='float: left; color: #ff0000;'>$lUNTotal</div>"
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal</div>"
+              }
+              var wWNPorts: Array[String] = new Array[String](0)
+              wWNPorts = wWNPorts :+ (responseObjectTwo \ "fibreChannel" \ "domains" \ 0 \ "portWWN").get.toString()
+              wWNPorts = wWNPorts :+  (responseObjectTwo \ "fibreChannel" \ "domains" \ 1 \ "portWWN").get.toString()
+              if (wWNPorts.length < 2) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
               }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
