@@ -94,6 +94,14 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
             for (hostNameString <- problemHosts) {
               logger.debug(problemData(problemPlace))
               mailBody = mailBody + s"$hostNameString <br />"
+              val responseObjectTwo = Json.parse(problemData(problemPlace))
+              val lUNZero = (responseObjectTwo \ "fibreChannel" \ "domains" \ 0 \ "lunCount")
+              val lUNOne = (responseObjectTwo \ "fibreChannel" \ "domains" \ 1 \ "lunCount")
+              val lUNTotal = lUNZero.get.toString().toInt + lUNOne.get.toString().toInt
+              if (lUNTotal < 20) {
+                mailBody = mailBody + s" LUN count: <div style='color: #ff0000;'>$lUNTotal</div>"
+              }
+              mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
             }
           }
