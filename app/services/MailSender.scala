@@ -131,8 +131,8 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   mDCProblemFound = true
                   mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
+              var mDCDataTwo: Array[String] = new Array[String](0)
               if (!mDCProblemFound) {
-                var mDCDataTwo: Array[String] = new Array[String](0)
                 try {
                   if((responseObjectTwo \ "mdcPing" \ 0 \ "visible").get.toString() == "true") {
                     mDCDataTwo = mDCDataTwo :+ "true"
@@ -147,6 +147,12 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 if (mDCDataTwo.length == 0) {
                   mDCProblemFound = true
                   mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
+                }
+              }
+              if (!mDCProblemFound) {
+                if (mDCData.length != mDCDataTwo.length) {
+                  mDCProblemFound = true
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: ff9000;'>Not all metadata controllers visible</div>"
                 }
               }
               mailBody = mailBody + s" <br />"
