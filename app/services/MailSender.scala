@@ -152,7 +152,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               if (!mDCProblemFound) {
                 if (mDCData.length != mDCDataTwo.length) {
                   mDCProblemFound = true
-                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: ff9000;'>Not all metadata controllers visible</div>"
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
                 }
               }
               mailBody = mailBody + s" <br />"
