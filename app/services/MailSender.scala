@@ -170,7 +170,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 }
               }
               try {
-                if((responseObjectTwo \ "denyDlcVolumes" \ 0 ).get.toString() == "true") {
+                if((responseObjectTwo \ "denyDlcVolumes" ).get.toString() == "[\"true\"]") {
                   mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
                 }
               } catch {
