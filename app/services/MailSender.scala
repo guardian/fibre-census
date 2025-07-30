@@ -155,6 +155,20 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
                 }
               }
+              if (!mDCProblemFound) {
+                var lossZero = 0
+                var lossOne = 0
+                try {
+                  lossZero = (responseObjectTwo \ "mdcPing" \ 0 \ "packetloss").get.toString().toInt
+                  lossOne = (responseObjectTwo \ "mdcPing" \ 1 \ "packetloss").get.toString().toInt
+                } catch {
+                  case e:Exception =>
+                    logger.debug(s"Could not read one of the packet loss values.")
+                }
+                if ((lossZero > 0) || (lossOne > 0)) {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
+                }
+              }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
             }
