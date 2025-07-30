@@ -177,11 +177,43 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 case e:Exception =>
                   mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
+              var driverData: Array[String] = new Array[String](0)
+              try {
+                if((responseObjectTwo \ "driverInfo" \ 0 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+                if((responseObjectTwo \ "driverInfo" \ 1 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+                if((responseObjectTwo \ "driverInfo" \ 2 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+                if((responseObjectTwo \ "driverInfo" \ 3 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+                if((responseObjectTwo \ "driverInfo" \ 4 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+                if((responseObjectTwo \ "driverInfo" \ 5 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+                if((responseObjectTwo \ "driverInfo" \ 6 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+                if((responseObjectTwo \ "driverInfo" \ 7 \ "loaded").get.toString() == "true") {
+                  driverData = driverData :+ "true"
+                }
+              } catch {
+                case e:Exception =>
+                  logger.debug(s"Could not read one of the driver values.")
+              }
+              if (driverData.length < 1) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
+              }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
             }
           }
-
           if (warningHosts.length > 0) {
             mailBody = mailBody + s"<br /> <div style='color: #ff9000;'>The following machines have the status 'warning': -</div>"
             for (hostNameString <- warningHosts) {
