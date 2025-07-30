@@ -129,7 +129,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } catch {
                 case e:Exception =>
                   mDCProblemFound = true
-                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
               var mDCDataTwo: Array[String] = new Array[String](0)
               if (!mDCProblemFound) {
@@ -146,13 +146,13 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 }
                 if (mDCDataTwo.length == 0) {
                   mDCProblemFound = true
-                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
                 }
               }
               if (!mDCProblemFound) {
                 if (mDCData.length != mDCDataTwo.length) {
                   mDCProblemFound = true
-                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
                 }
               }
               if (!mDCProblemFound) {
@@ -166,8 +166,16 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                     logger.debug(s"Could not read one of the packet loss values.")
                 }
                 if ((lossZero > 0) || (lossOne > 0)) {
-                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
                 }
+              }
+              try {
+                if((responseObjectTwo \ "denyDlcVolumes" \ 0 ).get.toString() == "true") {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
+                }
+              } catch {
+                case e:Exception =>
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
