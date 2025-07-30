@@ -111,7 +111,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   logger.debug(s"Could not get first LUN reading.")
               }
               if (lUNTotal < 20) {
-                mailBody = mailBody + s"<div style='float: left;'>&nbsp;LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal</div>"
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal</div>"
               }
               var wWNPorts: Array[String] = new Array[String](0)
               try {
@@ -119,7 +119,35 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 wWNPorts = wWNPorts :+  (responseObjectTwo \ "fibreChannel" \ "domains" \ 1 \ "portWWN").get.toString()
               } catch {
                 case e:Exception =>
-                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
+              }
+              var mDCProblemFound = false
+              var mDCData: Array[String] = new Array[String](0)
+              try {
+                mDCData = mDCData :+ (responseObjectTwo \ "mdcPing" \ 0 \ "ipAddress").get.toString()
+                mDCData = mDCData :+ (responseObjectTwo \ "mdcPing" \ 1 \ "ipAddress").get.toString()
+              } catch {
+                case e:Exception =>
+                  mDCProblemFound = true
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+              }
+              if (!mDCProblemFound) {
+                var mDCDataTwo: Array[String] = new Array[String](0)
+                try {
+                  if((responseObjectTwo \ "mdcPing" \ 0 \ "visible").get.toString() == "true") {
+                    mDCDataTwo = mDCDataTwo :+ "true"
+                  }
+                  if((responseObjectTwo \ "mdcPing" \ 1 \ "visible").get.toString() == "true") {
+                    mDCDataTwo = mDCDataTwo :+ "true"
+                  }
+                } catch {
+                  case e:Exception =>
+                    logger.debug(s"Could not read one of the visible values.")
+                }
+                if (mDCDataTwo.length == 0) {
+                  mDCProblemFound = true
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Controller Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
+                }
               }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
