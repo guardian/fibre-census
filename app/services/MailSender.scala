@@ -111,7 +111,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   logger.debug(s"Could not get first LUN reading.")
               }
               if (lUNTotal < 20) {
-                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal</div>"
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal Expecting at least 20 LUNs visible on at least one interface</div>"
               }
               var wWNPorts: Array[String] = new Array[String](0)
               try {
