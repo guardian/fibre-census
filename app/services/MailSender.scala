@@ -55,7 +55,9 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
             status = statusObject.get.toString().replace("\"", "")
             logger.debug(s"Status: $status")
           } catch {
-            case e:Exception => logger.debug(s"Could not get status.")
+            case e:Exception =>
+              logger.debug(s"Could not get status.")
+              status = ""
           }
 
           if (status == "warning") {
