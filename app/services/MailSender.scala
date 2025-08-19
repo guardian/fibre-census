@@ -229,8 +229,141 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
           }
           if (warningHosts.length > 0) {
             mailBody = mailBody + s"<br /> <div style='color: #ff9000;'>The following machines have the status 'warning': -</div>"
-            for (hostNameString <- warningHosts) {
-              mailBody = mailBody + s"$hostNameString <br />"
+            var warningPlace = 0
+            for (hostNameStringW <- warningHosts) {
+              logger.debug(warningData(warningPlace))
+              mailBody = mailBody + s"<div style='float: left;'>$hostNameStringW</div>"
+              val responseObjectTwoW = Json.parse(warningData(warningPlace))
+              val lUNZeroW = (responseObjectTwoW \ "fibreChannel" \ "domains" \ 0 \ "lunCount")
+              val lUNOneW = (responseObjectTwoW \ "fibreChannel" \ "domains" \ 1 \ "lunCount")
+              var lUNTotalW = 0
+              try {
+                lUNTotalW = lUNZeroW.get.toString().toInt
+              } catch {
+                case e:Exception =>
+                  logger.debug(s"Could not get zeroth LUN reading.")
+              }
+              try {
+                lUNTotalW = lUNTotalW + lUNOneW.get.toString().toInt
+              } catch {
+                case e:Exception =>
+                  logger.debug(s"Could not get first LUN reading.")
+              }
+              if (lUNTotalW < 20) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotalW Expecting at least 20 LUNs visible on at least one interface</div>"
+              }
+              var wWNPortsW: Array[String] = new Array[String](0)
+              try {
+                wWNPortsW = wWNPortsW :+ (responseObjectTwoW \ "fibreChannel" \ "domains" \ 0 \ "portWWN").get.toString()
+                wWNPortsW = wWNPortsW :+  (responseObjectTwoW \ "fibreChannel" \ "domains" \ 1 \ "portWWN").get.toString()
+              } catch {
+                case e:Exception =>
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
+              }
+              var mDCProblemFoundW = false
+              var mDCDataW: Array[String] = new Array[String](0)
+              try {
+                mDCDataW = mDCDataW :+ (responseObjectTwoW \ "mdcPing" \ 0 \ "ipAddress").get.toString()
+                mDCDataW = mDCDataW :+ (responseObjectTwoW \ "mdcPing" \ 1 \ "ipAddress").get.toString()
+              } catch {
+                case e:Exception =>
+                  mDCProblemFoundW = true
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+              }
+              var mDCDataTwoW: Array[String] = new Array[String](0)
+              if (!mDCProblemFoundW) {
+                try {
+                  if((responseObjectTwoW \ "mdcPing" \ 0 \ "visible").get.toString() == "true") {
+                    mDCDataTwoW = mDCDataTwoW :+ "true"
+                  }
+                  if((responseObjectTwoW \ "mdcPing" \ 1 \ "visible").get.toString() == "true") {
+                    mDCDataTwoW = mDCDataTwoW :+ "true"
+                  }
+                } catch {
+                  case e:Exception =>
+                    logger.debug(s"Could not read one of the visible values.")
+                }
+                if (mDCDataTwoW.length == 0) {
+                  mDCProblemFoundW = true
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
+                }
+              }
+              if (!mDCProblemFoundW) {
+                if (mDCDataW.length != mDCDataTwoW.length) {
+                  mDCProblemFoundW = true
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
+                }
+              }
+              if (!mDCProblemFoundW) {
+                var lossZeroW = 0
+                var lossOneW = 0
+                try {
+                  lossZeroW = (responseObjectTwoW \ "mdcPing" \ 0 \ "packetloss").get.toString().toInt
+                  lossOneW = (responseObjectTwoW \ "mdcPing" \ 1 \ "packetloss").get.toString().toInt
+                } catch {
+                  case e:Exception =>
+                    logger.debug(s"Could not read one of the packet loss values.")
+                }
+                if ((lossZeroW > 0) || (lossOneW > 0)) {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
+                }
+              }
+              try {
+                if((responseObjectTwoW \ "denyDlcVolumes" ).get.toString() == "[\"true\"]") {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
+                }
+              } catch {
+                case e:Exception =>
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+              }
+              var driverDataW: Array[String] = new Array[String](0)
+              try {
+                if((responseObjectTwoW \ "driverInfo" \ 0 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+                if((responseObjectTwoW \ "driverInfo" \ 1 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+                if((responseObjectTwoW \ "driverInfo" \ 2 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+                if((responseObjectTwoW \ "driverInfo" \ 3 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+                if((responseObjectTwoW \ "driverInfo" \ 4 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+                if((responseObjectTwoW \ "driverInfo" \ 5 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+                if((responseObjectTwoW \ "driverInfo" \ 6 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+                if((responseObjectTwoW \ "driverInfo" \ 7 \ "loaded").get.toString() == "true") {
+                  driverDataW = driverDataW :+ "true"
+                }
+              } catch {
+                case e:Exception =>
+                  logger.debug(s"Could not read one of the driver values.")
+              }
+              if (driverDataW.length < 1) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
+              }
+              val iPAddressesW = (responseObjectTwoW \ "ipAddresses").get.toString()
+              val iPAddressesArrayW = (responseObjectTwoW \ "ipAddresses").get.toString().split(",")
+              if (iPAddressesW == "[]") {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No network connections detected</div>"
+              } else if (iPAddressesArrayW.length < 2) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
+              }
+              val sANMountsW = (responseObjectTwoW \ "sanMounts").get.toString()
+              if (sANMountsW == "[]") {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+              } else if ((!(sANMountsW contains "Multimedia2")) || (!(sANMountsW contains "Proxies2")) || (!(sANMountsW contains "StudioPipe2"))) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
+              }
+              mailBody = mailBody + s" <br />"
+              warningPlace = warningPlace + 1
             }
           }
 
