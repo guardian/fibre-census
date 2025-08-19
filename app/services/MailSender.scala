@@ -210,6 +210,12 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               if (driverData.length < 1) {
                 mailBody = mailBody + s"<div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
               }
+              val iPAddresses = (responseObjectTwo \ "ipAddresses").get.toString().split("'")
+              if (iPAddresses.length == 0) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No network connections detected</div>"
+              } else if (iPAddresses.length < 2) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
+              }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
             }
