@@ -217,6 +217,12 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } else if (iPAddressesArray.length < 2) {
                 mailBody = mailBody + s"<div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
               }
+              val sANMounts = (responseObjectTwo \ "sanMounts").get.toString()
+              if (sANMounts == "[]") {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+              } else if ((!(sANMounts contains "Multimedia2")) || (!(sANMounts contains "Proxies2")) || (!(sANMounts contains "StudioPipe2"))) {
+                mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
+              }
               mailBody = mailBody + s" <br />"
               problemPlace = problemPlace + 1
             }
