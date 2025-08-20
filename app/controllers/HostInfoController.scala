@@ -160,6 +160,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
         }.map({
           case Left(failure) => InternalServerError(GenericErrorResponse("elasticsearch_error", failure.error.toString).asJson)
           case Right(success) =>
+            var oldStatus = s""
             client.execute {
               search(s"$indexName/entry").query(idsQuery(idToUse))
             }.map({
@@ -168,24 +169,171 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
               case Right(output) =>
                 val response = output.body
                 val responseObject = Json.parse(response.get)
+                logger.debug(responseObject.toString())
                 val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
-                val oldStatus = oldStatusResult.get.toString().replace("\"", "")
+                oldStatus = oldStatusResult.get.toString().replace("\"", "")
                 logger.debug( s"Old status: $oldStatus")
-                if (isTriggerStatus(oldStatus, entryStatus)) {
-                  logger.debug( s"About to attempt to send an e-mail to: ${playConfig.get[String]("mail.recipient_address")}")
-                  try {
-                    val email = Email( playConfig.get[String]("mail.subject"), s"${playConfig.get[String]("mail.sender_name")} <${playConfig.get[String]("mail.sender_address")}>", Seq(s"${playConfig.get[String]("mail.recipient_name")} <${playConfig.get[String]("mail.recipient_address")}>"), bodyText = Some(s"The machine ${entry.hostName} has entered the status of '${entryStatus}'."))
-                    mailerClient.send(email)
-                  } catch {
-                    case e: Exception => logger.error(s"Sending e-mail failed with error: $e")
-                  }
-                }
             })
             client.execute {
               update(idToUse).in(s"$indexName/entry").docAsUpsert (
                 "status" -> entryStatus
               )
             }
+            Thread.sleep(1000)
+            client.execute {
+              search(s"$indexName/entry").query(idsQuery(idToUse))
+            }.map({
+              case Left(failure) =>
+                logger.debug( s"Could not load record.")
+              case Right(output) =>
+                val response = output.body
+                val responseObject = Json.parse(response.get)
+                logger.debug(responseObject.toString())
+                var mailBody = s"<html><body>"
+                if (entryStatus == "problem") {
+                  mailBody = mailBody + s"<div style='color: #ff0000;'>The machine ${entry.hostName} has entered the status of '${entryStatus}'.</div>"
+                } else {
+                  mailBody = mailBody + s"<div style='color: #ff9000;'>The machine ${entry.hostName} has entered the status of '${entryStatus}'.</div>"
+                }
+                val lUNZero = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "fibreChannel" \ "domains" \ 0 \ "lunCount")
+                val lUNOne = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "fibreChannel" \ "domains" \ 1 \ "lunCount")
+                var lUNTotal = 0
+                try {
+                  lUNTotal = lUNZero.get.toString().toInt
+                } catch {
+                  case e:Exception =>
+                    logger.debug(s"Could not get zeroth LUN reading.")
+                }
+                try {
+                  lUNTotal = lUNTotal + lUNOne.get.toString().toInt
+                } catch {
+                  case e:Exception =>
+                    logger.debug(s"Could not get first LUN reading.")
+                }
+                if (lUNTotal < 20) {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal Expecting at least 20 LUNs visible on at least one interface</div>"
+                }
+                var wWNPorts: Array[String] = new Array[String](0)
+                try {
+                  wWNPorts = wWNPorts :+ (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "fibreChannel" \ "domains" \ 0 \ "portWWN").get.toString()
+                  wWNPorts = wWNPorts :+  (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "fibreChannel" \ "domains" \ 1 \ "portWWN").get.toString()
+                } catch {
+                  case e:Exception =>
+                    mailBody = mailBody + s"<div style='float: left;'>&nbsp;- Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
+                }
+                var mDCProblemFound = false
+                var mDCData: Array[String] = new Array[String](0)
+                try {
+                  mDCData = mDCData :+ (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "mdcPing" \ 0 \ "ipAddress").get.toString()
+                  mDCData = mDCData :+ (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "mdcPing" \ 1 \ "ipAddress").get.toString()
+                } catch {
+                  case e:Exception =>
+                    mDCProblemFound = true
+                    mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                }
+                var mDCDataTwo: Array[String] = new Array[String](0)
+                if (!mDCProblemFound) {
+                  try {
+                    if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "mdcPing" \ 0 \ "visible").get.toString() == "true") {
+                      mDCDataTwo = mDCDataTwo :+ "true"
+                    }
+                    if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "mdcPing" \ 1 \ "visible").get.toString() == "true") {
+                      mDCDataTwo = mDCDataTwo :+ "true"
+                    }
+                  } catch {
+                    case e:Exception =>
+                      logger.debug(s"Could not read one of the visible values.")
+                  }
+                  if (mDCDataTwo.length == 0) {
+                    mDCProblemFound = true
+                    mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
+                  }
+                }
+                if (!mDCProblemFound) {
+                  if (mDCData.length != mDCDataTwo.length) {
+                    mDCProblemFound = true
+                    mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
+                  }
+                }
+                if (!mDCProblemFound) {
+                  var lossZero = 0
+                  var lossOne = 0
+                  try {
+                    lossZero = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "mdcPing" \ 0 \ "packetloss").get.toString().toInt
+                    lossOne = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "mdcPing" \ 1 \ "packetloss").get.toString().toInt
+                  } catch {
+                    case e:Exception =>
+                      logger.debug(s"Could not read one of the packet loss values.")
+                  }
+                  if ((lossZero > 0) || (lossOne > 0)) {
+                    mailBody = mailBody + s"<div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
+                  }
+                }
+                try {
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "denyDlcVolumes" ).get.toString() == "[\"true\"]") {
+                    mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
+                  }
+                } catch {
+                  case e:Exception =>
+                    mailBody = mailBody + s"<div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                }
+                var driverData: Array[String] = new Array[String](0)
+                try {
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 0 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 1 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 2 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 3 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 4 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 5 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 6 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                  if((responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "driverInfo" \ 7 \ "loaded").get.toString() == "true") {
+                    driverData = driverData :+ "true"
+                  }
+                } catch {
+                  case e:Exception =>
+                    logger.debug(s"Could not read one of the driver values.")
+                }
+                if (driverData.length < 1) {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
+                }
+                val iPAddresses = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "ipAddresses").get.toString()
+                val iPAddressesArray = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "ipAddresses").get.toString().split(",")
+                if (iPAddresses == "[]") {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No network connections detected</div>"
+                } else if (iPAddressesArray.length < 2) {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
+                }
+                val sANMounts = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "sanMounts").get.toString()
+                if (sANMounts == "[]") {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                } else if ((!(sANMounts contains "Multimedia2")) || (!(sANMounts contains "Proxies2")) || (!(sANMounts contains "StudioPipe2"))) {
+                  mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
+                }
+                mailBody = mailBody + s"</body></html>"
+                if (isTriggerStatus(oldStatus, entryStatus)) {
+                  logger.debug( s"About to attempt to send an e-mail to: ${playConfig.get[String]("mail.recipient_address")}")
+                  try {
+                    val email = Email( playConfig.get[String]("mail.subject"), s"${playConfig.get[String]("mail.sender_name")} <${playConfig.get[String]("mail.sender_address")}>", Seq(s"${playConfig.get[String]("mail.recipient_name")} <${playConfig.get[String]("mail.recipient_address")}>"), bodyHtml = Some(mailBody))
+                    mailerClient.send(email)
+                  } catch {
+                    case e: Exception => logger.error(s"Sending e-mail failed with error: $e")
+                  }
+                }
+            })
             Ok(success.result.id)
         }).recoverWith({
           case ex:Throwable=>
