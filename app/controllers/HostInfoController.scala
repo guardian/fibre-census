@@ -179,7 +179,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
                 "status" -> entryStatus
               )
             }
-            Thread.sleep(500)
+            Thread.sleep(1000)
             client.execute {
               search(s"$indexName/entry").query(idsQuery(idToUse))
             }.map({
