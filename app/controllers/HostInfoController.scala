@@ -160,7 +160,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
         }.map({
           case Left(failure) => InternalServerError(GenericErrorResponse("elasticsearch_error", failure.error.toString).asJson)
           case Right(success) =>
-            Thread.sleep(2000)
+            Thread.sleep(100)
             client.execute {
               search(s"$indexName/entry").query(idsQuery(idToUse))
             }.map({
@@ -169,6 +169,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
               case Right(output) =>
                 val response = output.body
                 val responseObject = Json.parse(response.get)
+                logger.debug(responseObject.toString())
                 val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
                 val oldStatus = oldStatusResult.get.toString().replace("\"", "")
                 logger.debug( s"Old status: $oldStatus")
