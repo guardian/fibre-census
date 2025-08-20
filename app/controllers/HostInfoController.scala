@@ -160,6 +160,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
         }.map({
           case Left(failure) => InternalServerError(GenericErrorResponse("elasticsearch_error", failure.error.toString).asJson)
           case Right(success) =>
+            Thread.sleep(2000)
             client.execute {
               search(s"$indexName/entry").query(idsQuery(idToUse))
             }.map({
@@ -171,7 +172,6 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
                 val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
                 val oldStatus = oldStatusResult.get.toString().replace("\"", "")
                 logger.debug( s"Old status: $oldStatus")
-                logger.info(responseObject.toString())
                 var mailBody = s"<html><body>"
                 if (entryStatus == "problem") {
                   mailBody = mailBody + s"<div style='color: #ff0000;'>The machine ${entry.hostName} has entered the status of '${entryStatus}'.</div>"
