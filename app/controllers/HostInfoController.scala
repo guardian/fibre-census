@@ -188,6 +188,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
               case Right(output) =>
                 val response = output.body
                 val responseObject = Json.parse(response.get)
+                logger.debug(responseObject.toString())
                 var mailBody = s"<html><body>"
                 if (entryStatus == "problem") {
                   mailBody = mailBody + s"<div style='color: #ff0000;'>The machine ${entry.hostName} has entered the status of '${entryStatus}'.</div>"
