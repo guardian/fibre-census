@@ -160,7 +160,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
         }.map({
           case Left(failure) => InternalServerError(GenericErrorResponse("elasticsearch_error", failure.error.toString).asJson)
           case Right(success) =>
-            Thread.sleep(100)
+            var oldStatus = s""
             client.execute {
               search(s"$indexName/entry").query(idsQuery(idToUse))
             }.map({
@@ -171,8 +171,23 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
                 val responseObject = Json.parse(response.get)
                 logger.debug(responseObject.toString())
                 val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
-                val oldStatus = oldStatusResult.get.toString().replace("\"", "")
+                oldStatus = oldStatusResult.get.toString().replace("\"", "")
                 logger.debug( s"Old status: $oldStatus")
+            })
+            client.execute {
+              update(idToUse).in(s"$indexName/entry").docAsUpsert (
+                "status" -> entryStatus
+              )
+            }
+            Thread.sleep(100)
+            client.execute {
+              search(s"$indexName/entry").query(idsQuery(idToUse))
+            }.map({
+              case Left(failure) =>
+                logger.debug( s"Could not load record.")
+              case Right(output) =>
+                val response = output.body
+                val responseObject = Json.parse(response.get)
                 var mailBody = s"<html><body>"
                 if (entryStatus == "problem") {
                   mailBody = mailBody + s"<div style='color: #ff0000;'>The machine ${entry.hostName} has entered the status of '${entryStatus}'.</div>"
@@ -318,11 +333,6 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
                   }
                 }
             })
-            client.execute {
-              update(idToUse).in(s"$indexName/entry").docAsUpsert (
-                "status" -> entryStatus
-              )
-            }
             Ok(success.result.id)
         }).recoverWith({
           case ex:Throwable=>
