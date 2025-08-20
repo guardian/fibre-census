@@ -171,6 +171,7 @@ class HostInfoController @Inject()(playConfig:Configuration,cc:ControllerCompone
                 val oldStatusResult = (responseObject \ "hits" \ "hits" \ 0 \ "_source" \ "status")
                 val oldStatus = oldStatusResult.get.toString().replace("\"", "")
                 logger.debug( s"Old status: $oldStatus")
+                logger.info(responseObject.toString())
                 var mailBody = s"<html><body>"
                 if (entryStatus == "problem") {
                   mailBody = mailBody + s"<div style='color: #ff0000;'>The machine ${entry.hostName} has entered the status of '${entryStatus}'.</div>"
