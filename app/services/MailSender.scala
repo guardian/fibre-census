@@ -89,7 +89,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
           var mailBody = s"<html><body>"
 
           if (problemHosts.length > 0) {
-            mailBody = mailBody + s"<br /> <div style='color: #ff0000; margin-bottom: 20px;'>The following machines have the status 'problem': - <br /></div>"
+            mailBody = mailBody + s"<div style='color: #ff0000; margin-bottom: 20px;'>The following machines have the status 'problem': - <br /></div>"
             var problemPlace = 0
             for (hostNameString <- problemHosts) {
               logger.debug(problemData(problemPlace))
@@ -111,7 +111,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   logger.debug(s"Could not get first LUN reading.")
               }
               if (lUNTotal < 20) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal Expecting at least 20 LUNs visible on at least one interface</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotal Expecting at least 20 LUNs visible on at least one interface</div>"
               }
               var wWNPorts: Array[String] = new Array[String](0)
               try {
@@ -119,7 +119,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 wWNPorts = wWNPorts :+  (responseObjectTwo \ "fibreChannel" \ "domains" \ 1 \ "portWWN").get.toString()
               } catch {
                 case e:Exception =>
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
               }
               var mDCProblemFound = false
               var mDCData: Array[String] = new Array[String](0)
@@ -129,7 +129,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } catch {
                 case e:Exception =>
                   mDCProblemFound = true
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
               var mDCDataTwo: Array[String] = new Array[String](0)
               if (!mDCProblemFound) {
@@ -146,13 +146,13 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 }
                 if (mDCDataTwo.length == 0) {
                   mDCProblemFound = true
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
                 }
               }
               if (!mDCProblemFound) {
                 if (mDCData.length != mDCDataTwo.length) {
                   mDCProblemFound = true
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
                 }
               }
               if (!mDCProblemFound) {
@@ -166,16 +166,16 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                     logger.debug(s"Could not read one of the packet loss values.")
                 }
                 if ((lossZero > 0) || (lossOne > 0)) {
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
                 }
               }
               try {
                 if((responseObjectTwo \ "denyDlcVolumes" ).get.toString() == "[\"true\"]") {
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
                 }
               } catch {
                 case e:Exception =>
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
               var driverData: Array[String] = new Array[String](0)
               try {
@@ -208,20 +208,20 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   logger.debug(s"Could not read one of the driver values.")
               }
               if (driverData.length < 1) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
               }
               val iPAddresses = (responseObjectTwo \ "ipAddresses").get.toString()
               val iPAddressesArray = (responseObjectTwo \ "ipAddresses").get.toString().split(",")
               if (iPAddresses == "[]") {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No network connections detected</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No network connections detected</div>"
               } else if (iPAddressesArray.length < 2) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
               }
               val sANMounts = (responseObjectTwo \ "sanMounts").get.toString()
               if (sANMounts == "[]") {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               } else if ((!(sANMounts contains "Multimedia2")) || (!(sANMounts contains "Proxies2")) || (!(sANMounts contains "StudioPipe2"))) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
               }
               mailBody = mailBody + s" <br /> <div style='margin-bottom: 20px;'>&nbsp;</div>"
               problemPlace = problemPlace + 1
@@ -250,7 +250,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   logger.debug(s"Could not get first LUN reading.")
               }
               if (lUNTotalW < 20) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotalW Expecting at least 20 LUNs visible on at least one interface</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- LUN count:&nbsp;</div> <div style='float: left; color: #ff0000;'>$lUNTotalW Expecting at least 20 LUNs visible on at least one interface</div>"
               }
               var wWNPortsW: Array[String] = new Array[String](0)
               try {
@@ -258,7 +258,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 wWNPortsW = wWNPortsW :+  (responseObjectTwoW \ "fibreChannel" \ "domains" \ 1 \ "portWWN").get.toString()
               } catch {
                 case e:Exception =>
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- Fibre WWNs:&nbsp;</div> <div style='float: left; color: #ff0000;'>Insufficient fibre interfaces</div>"
               }
               var mDCProblemFoundW = false
               var mDCDataW: Array[String] = new Array[String](0)
@@ -268,7 +268,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } catch {
                 case e:Exception =>
                   mDCProblemFoundW = true
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
               var mDCDataTwoW: Array[String] = new Array[String](0)
               if (!mDCProblemFoundW) {
@@ -285,13 +285,13 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                 }
                 if (mDCDataTwoW.length == 0) {
                   mDCProblemFoundW = true
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata controllers visible</div>"
                 }
               }
               if (!mDCProblemFoundW) {
                 if (mDCDataW.length != mDCDataTwoW.length) {
                   mDCProblemFoundW = true
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Not all metadata controllers visible</div>"
                 }
               }
               if (!mDCProblemFoundW) {
@@ -305,16 +305,16 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                     logger.debug(s"Could not read one of the packet loss values.")
                 }
                 if ((lossZeroW > 0) || (lossOneW > 0)) {
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- MDC Connectivity:&nbsp;</div> <div style='float: left; color: #ff9000;'>Packet loss seen</div>"
                 }
               }
               try {
                 if((responseObjectTwoW \ "denyDlcVolumes" ).get.toString() == "[\"true\"]") {
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting this value to be false</div>"
                 }
               } catch {
                 case e:Exception =>
-                  mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                  mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- UseDLC:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               }
               var driverDataW: Array[String] = new Array[String](0)
               try {
@@ -347,20 +347,20 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
                   logger.debug(s"Could not read one of the driver values.")
               }
               if (driverDataW.length < 1) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- Fibre drivers:&nbsp;</div> <div style='float: left; color: #ff0000;'>No drivers loaded</div>"
               }
               val iPAddressesW = (responseObjectTwoW \ "ipAddresses").get.toString()
               val iPAddressesArrayW = (responseObjectTwoW \ "ipAddresses").get.toString().split(",")
               if (iPAddressesW == "[]") {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No network connections detected</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No network connections detected</div>"
               } else if (iPAddressesArrayW.length < 2) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- IP addresses:&nbsp;</div> <div style='float: left; color: #ff0000;'>No metadata network</div>"
               }
               val sANMountsW = (responseObjectTwoW \ "sanMounts").get.toString()
               if (sANMountsW == "[]") {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>No data provided</div>"
               } else if ((!(sANMountsW contains "Multimedia2")) || (!(sANMountsW contains "Proxies2")) || (!(sANMountsW contains "StudioPipe2"))) {
-                mailBody = mailBody + s"<br /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
+                mailBody = mailBody + s"<br clear='all' /> <div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
               }
               mailBody = mailBody + s" <br /> <div style='margin-bottom: 20px;'>&nbsp;</div>"
               warningPlace = warningPlace + 1
