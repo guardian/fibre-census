@@ -223,7 +223,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } else if ((!(sANMounts contains "Multimedia2")) || (!(sANMounts contains "Proxies2")) || (!(sANMounts contains "StudioPipe2"))) {
                 mailBody = mailBody + s"<br clear='all' /> &nbsp;- SAN Mounts:&nbsp; <span style='color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</span>"
               }
-              mailBody = mailBody + s" <br /> <div style='margin-bottom: 20px;'>&nbsp;</div>"
+              mailBody = mailBody + s" <br /><br />"
               problemPlace = problemPlace + 1
             }
           }
@@ -362,7 +362,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } else if ((!(sANMountsW contains "Multimedia2")) || (!(sANMountsW contains "Proxies2")) || (!(sANMountsW contains "StudioPipe2"))) {
                 mailBody = mailBody + s"<br clear='all' /> &nbsp;- SAN Mounts:&nbsp; <span style='color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</span>"
               }
-              mailBody = mailBody + s" <br /> <div style='margin-bottom: 20px;'>&nbsp;</div>"
+              mailBody = mailBody + s" <br /><br />"
               warningPlace = warningPlace + 1
             }
           }
