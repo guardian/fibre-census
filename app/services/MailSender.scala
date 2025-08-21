@@ -223,12 +223,12 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } else if ((!(sANMounts contains "Multimedia2")) || (!(sANMounts contains "Proxies2")) || (!(sANMounts contains "StudioPipe2"))) {
                 mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
               }
-              mailBody = mailBody + s" <br />"
+              mailBody = mailBody + s" <br /><br />"
               problemPlace = problemPlace + 1
             }
           }
           if (warningHosts.length > 0) {
-            mailBody = mailBody + s"<br /> <div style='color: #ff9000;'>The following machines have the status 'warning': -</div>"
+            mailBody = mailBody + s"<br clear='all' /> <div style='color: #ff9000;'>The following machines have the status 'warning': -</div>"
             var warningPlace = 0
             for (hostNameStringW <- warningHosts) {
               logger.debug(warningData(warningPlace))
@@ -362,7 +362,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
               } else if ((!(sANMountsW contains "Multimedia2")) || (!(sANMountsW contains "Proxies2")) || (!(sANMountsW contains "StudioPipe2"))) {
                 mailBody = mailBody + s"<div style='float: left;'>&nbsp;- SAN Mounts:&nbsp;</div> <div style='float: left; color: #ff0000;'>Expecting volumes Multimedia2, Proxies2, and StudioPipe2</div>"
               }
-              mailBody = mailBody + s" <br />"
+              mailBody = mailBody + s" <br /><br />"
               warningPlace = warningPlace + 1
             }
           }
