@@ -232,7 +232,7 @@ class MailSender @Inject()(playConfig:Configuration, esClientMgr:ESClientManager
             var warningPlace = 0
             for (hostNameStringW <- warningHosts) {
               logger.debug(warningData(warningPlace))
-              mailBody = mailBody + s"$hostNameStringW <br />"
+              mailBody = mailBody + s"$hostNameStringW"
               val responseObjectTwoW = Json.parse(warningData(warningPlace))
               val lUNZeroW = (responseObjectTwoW \ "fibreChannel" \ "domains" \ 0 \ "lunCount")
               val lUNOneW = (responseObjectTwoW \ "fibreChannel" \ "domains" \ 1 \ "lunCount")
